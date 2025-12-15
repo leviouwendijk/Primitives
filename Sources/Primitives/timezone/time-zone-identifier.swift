@@ -81,7 +81,7 @@ public enum TimeZoneIdentifier: String, TimeZoneIdentifying {
     }
     
     public func timezone() throws -> TimeZone {
-        if let timezone = TimeZone(identifier: self.rawValue) {
+        if let timezone = TimeZone(identifier: self.identifier) {
             return timezone
         } else {
             throw TimeZoneIdentifierError.cannotSyntesizeTimeZone
