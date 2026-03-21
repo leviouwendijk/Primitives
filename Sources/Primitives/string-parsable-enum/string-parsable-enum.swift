@@ -1,11 +1,21 @@
 public protocol StringParsableEnum: RawRepresentable, CaseIterable where RawValue == String {
-    static func available() -> String
+    static var available: [String] { get }
+    static func available_list() -> String
     static func parse(from string: String) throws (EnumParsingError) -> Self
+    init(parsing string: String) throws(EnumParsingError)
 }
 
 public extension StringParsableEnum {
-    static func available() -> String {
-        allCases.map { $0.rawValue }.joined(separator: "\n")
+    static var available: [String] {
+        allCases.map(\.rawValue)
+    }
+
+    static func available_list() -> String {
+        available.joined(separator: "\n")
+    }
+
+    init(parsing string: String) throws(EnumParsingError) {
+        self = try Self.parse(from: string)
     }
     
     static func parse(from string: String) throws (EnumParsingError) -> Self {
@@ -15,7 +25,7 @@ public extension StringParsableEnum {
         throw .init(
             enumName: String(describing: Self.self),
             provided: string,
-            cases: available()
+            cases: available_list()
         )
     }
 }
