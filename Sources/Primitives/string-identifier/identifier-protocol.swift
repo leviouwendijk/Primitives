@@ -33,3 +33,19 @@ extension StringIdentifier {
         rawValue
     }
 }
+
+extension StringIdentifier {
+    public init(
+        from decoder: Decoder
+    ) throws {
+        let container = try decoder.singleValueContainer()
+        self.init(rawValue: try container.decode(String.self))
+    }
+
+    public func encode(
+        to encoder: Encoder
+    ) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
+}
