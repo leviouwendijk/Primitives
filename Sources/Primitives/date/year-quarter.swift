@@ -17,6 +17,33 @@ public struct YearQuarter: Equatable, Hashable, Sendable, Codable {
     }
 
     public init(
+        label: String
+    ) throws {
+        let normalized = label
+            .trimmingCharacters(
+                in: .whitespacesAndNewlines
+            )
+            .uppercased()
+
+        let parts = normalized.split(
+            separator: "Q",
+            omittingEmptySubsequences: false
+        )
+
+        guard parts.count == 2,
+              let year = Int(parts[0]),
+              let quarter = Int(parts[1])
+        else {
+            throw YearQuarterError.invalidLabel(label)
+        }
+
+        try self.init(
+            year: year,
+            quarter: quarter
+        )
+    }
+
+    public init(
         containing date: Date,
         calendar: Calendar
     ) {
@@ -60,10 +87,14 @@ public struct YearQuarter: Equatable, Hashable, Sendable, Codable {
 }
 
 public enum YearQuarterError: Error, LocalizedError, Sendable, Equatable {
+    case invalidLabel(String)
     case invalidQuarter(Int)
 
     public var errorDescription: String? {
         switch self {
+        case .invalidLabel(let label):
+            return "Invalid year-quarter label: \(label)"
+
         case .invalidQuarter(let quarter):
             return "Invalid quarter: \(quarter)"
         }
