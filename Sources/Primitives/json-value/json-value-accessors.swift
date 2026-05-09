@@ -8,27 +8,27 @@ extension JSONValue {
             self.jsonvalue = jsonvalue
         }
 
-        var string: String? {
+        public var string: String? {
             try? self.jsonvalue.stringValue
         }
 
-        var int: Int? {
+        public var int: Int? {
             try? self.jsonvalue.intValue
         }
 
-        var double: Double? {
+        public var double: Double? {
             try? self.jsonvalue.doubleValue
         }
 
-        var bool: Bool? {
+        public var bool: Bool? {
             try? self.jsonvalue.boolValue
         }
 
-        var object: [String: JSONValue]? {
+        public var object: [String: JSONValue]? {
             try? self.jsonvalue.objectValue
         }
 
-        var array: [JSONValue]? {
+        public var array: [JSONValue]? {
             try? self.jsonvalue.arrayValue
         }
     }
