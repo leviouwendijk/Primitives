@@ -18,10 +18,9 @@ public extension PartialDate {
         _ year: Int,
         _ month: Int
     ) throws(DateSpecificationError) -> PartialDate {
-        try validate(
+        try validateMonth(
             year: year,
-            month: month,
-            day: 1
+            month: month
         )
 
         return PartialDate(
@@ -35,7 +34,7 @@ public extension PartialDate {
         _ month: Int,
         _ day: Int
     ) throws(DateSpecificationError) -> PartialDate {
-        try validate(
+        try validateDay(
             year: year,
             month: month,
             day: day
@@ -133,7 +132,7 @@ public extension PartialDate {
 
         case .latest:
             completedMonth = month ?? 12
-            completedDay = day ?? latestDay(
+            completedDay = day ?? Self.lastDay(
                 year: year,
                 month: completedMonth
             )
@@ -142,58 +141,68 @@ public extension PartialDate {
         return year * 10_000 + completedMonth * 100 + completedDay
     }
 
-    private static func validate(
+    private static func validateMonth(
         year: Int,
-        month: Int,
-        day: Int
+        month: Int
     ) throws(DateSpecificationError) {
-        var components = DateComponents()
-        components.calendar = Calendar(identifier: .gregorian)
-        components.timeZone = TimeZone(secondsFromGMT: 0)
-        components.year = year
-        components.month = month
-        components.day = day
-
-        guard
-            let date = components.date,
-            let resolved = components.calendar?.dateComponents(
-                [.year, .month, .day],
-                from: date
-            ),
-            resolved.year == year,
-            resolved.month == month,
-            resolved.day == day
-        else {
-            throw .invalidDateComponents(
+        guard (1...12).contains(month) else {
+            throw .invalidPartialDate(
                 year: year,
                 month: month,
-                day: day,
-                timeZoneIdentifier: "UTC"
+                day: nil
             )
         }
     }
 
-    private func latestDay(
+    private static func validateDay(
+        year: Int,
+        month: Int,
+        day: Int
+    ) throws(DateSpecificationError) {
+        try validateMonth(
+            year: year,
+            month: month
+        )
+
+        guard (1...lastDay(year: year, month: month)).contains(day) else {
+            throw .invalidPartialDate(
+                year: year,
+                month: month,
+                day: day
+            )
+        }
+    }
+
+    private static func lastDay(
         year: Int,
         month: Int
     ) -> Int {
-        var components = DateComponents()
-        components.calendar = Calendar(identifier: .gregorian)
-        components.timeZone = TimeZone(secondsFromGMT: 0)
-        components.year = year
-        components.month = month
+        switch month {
+        case 1, 3, 5, 7, 8, 10, 12:
+            return 31
 
-        guard
-            let date = components.date,
-            let range = components.calendar?.range(
-                of: .day,
-                in: .month,
-                for: date
-            )
-        else {
+        case 4, 6, 9, 11:
+            return 30
+
+        case 2:
+            return isLeapYear(year) ? 29 : 28
+
+        default:
             return 31
         }
+    }
 
-        return range.count
+    private static func isLeapYear(
+        _ year: Int
+    ) -> Bool {
+        if year.isMultiple(of: 400) {
+            return true
+        }
+
+        if year.isMultiple(of: 100) {
+            return false
+        }
+
+        return year.isMultiple(of: 4)
     }
 }

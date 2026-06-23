@@ -64,6 +64,7 @@ public enum DateSpecificationError: Error, LocalizedError, Sendable, Equatable {
     case inferNotAbsolute
     case invalidInferDay(Int)
     case incompleteDateParts(year: Int?, month: Int?, day: Int?)
+    case invalidPartialDate(year: Int, month: Int?, day: Int?)
     case invalidDateComponents(year: Int, month: Int, day: Int, timeZoneIdentifier: String)
 
     public var errorDescription: String? {
@@ -74,6 +75,8 @@ public enum DateSpecificationError: Error, LocalizedError, Sendable, Equatable {
                 return "Invalid inferred day: \(day)"
             case .incompleteDateParts(let year, let month, let day):
                 return "Incomplete date parts year=\(String(describing: year)) month=\(String(describing: month)) day=\(String(describing: day))"
+            case .invalidPartialDate(let year, let month, let day):
+                return "Invalid partial date year=\(year) month=\(String(describing: month)) day=\(String(describing: day))"
             case .invalidDateComponents(let year, let month, let day, let timeZoneIdentifier):
                 return "Invalid date components year=\(year) month=\(month) day=\(day) timeZone=\(timeZoneIdentifier)"
         }
