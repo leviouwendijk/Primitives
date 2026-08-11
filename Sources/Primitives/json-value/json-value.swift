@@ -1,22 +1,5 @@
 import Foundation
 
-public enum JSONValueError: Error, LocalizedError, Sendable {
-    case typeMismatch(expected: String, actual: JSONValue)
-    case invalidCast(description: String)
-    case pathNotFound(path: String)
-
-    public var errorDescription: String? {
-        switch self {
-        case .typeMismatch(let expected, let actual):
-            return "Type mismatch: expected \(expected), got \(actual)."
-        case .invalidCast(let description):
-            return "Invalid cast: \(description)."
-        case .pathNotFound(let path):
-            return "JSON path not found: \(path)."
-        }
-    }
-}
-
 public enum JSONValue: Codable, Sendable, Hashable, Equatable {
     case string(String)
     case int(Int)
@@ -192,9 +175,25 @@ extension JSONValue {
     }
 }
 
+// extension JSONValue {
+//     public func `as`<T: Decodable>(_ type: T.Type) throws -> T {
+//         let data = try JSONEncoder().encode(self)
+//         return try JSONDecoder().decode(T.self, from: data)
+//     }
+// }
+
 extension JSONValue {
-    public func `as`<T: Decodable>(_ type: T.Type) throws -> T {
-        let data = try JSONEncoder().encode(self)
-        return try JSONDecoder().decode(T.self, from: data)
+    public func `as`<T: Decodable>(
+        _ type: T.Type,
+        using decoder: JSONDecoder = JSONDecoder()
+    ) throws -> T {
+        let data = try JSONEncoder().encode(
+            self
+        )
+
+        return try decoder.decode(
+            T.self,
+            from: data
+        )
     }
 }
