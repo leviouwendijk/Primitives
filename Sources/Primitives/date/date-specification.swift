@@ -44,11 +44,17 @@ public enum DateSpecification:
     public init(
         inferDay day: Int
     ) throws(DateSpecificationError) {
-        self = .infer(
-            day: try DayOfMonth(
+        do {
+            self = .infer(
+                day: try DayOfMonth(
+                    day
+                )
+            )
+        } catch {
+            throw .invalidInferDay(
                 day
             )
-        )
+        }
     }
 
     public init(
