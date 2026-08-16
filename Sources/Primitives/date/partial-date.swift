@@ -53,6 +53,74 @@ public struct PartialDate:
     }
 
     public init(
+        year: Int? = nil,
+        month: Int? = nil,
+        day: Int? = nil
+    ) throws(DateSpecificationError) {
+        switch (
+            year,
+            month,
+            day
+        ) {
+        case (
+            nil,
+            nil,
+            nil
+        ):
+            self.init()
+
+        case (
+            .some(
+                let year
+            ),
+            nil,
+            nil
+        ):
+            self.init(
+                year: year
+            )
+
+        case (
+            .some(
+                let year
+            ),
+            .some(
+                let month
+            ),
+            nil
+        ):
+            try self.init(
+                year: year,
+                month: month
+            )
+
+        case (
+            .some(
+                let year
+            ),
+            .some(
+                let month
+            ),
+            .some(
+                let day
+            )
+        ):
+            try self.init(
+                year: year,
+                month: month,
+                day: day
+            )
+
+        default:
+            throw .incompleteDateParts(
+                year: year,
+                month: month,
+                day: day
+            )
+        }
+    }
+
+    public init(
         year: Int,
         month: Int
     ) throws(DateSpecificationError) {
