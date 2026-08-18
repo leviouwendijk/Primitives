@@ -53,9 +53,9 @@ public struct PartialDate:
     }
 
     public init(
-        year: Int? = nil,
-        month: Int? = nil,
-        day: Int? = nil
+        year: Int?,
+        month: Int?,
+        day: Int?
     ) throws(DateSpecificationError) {
         switch (
             year,
