@@ -1,0 +1,25 @@
+{
+  "failed" : 0,
+  "failed_names" : [
+
+  ],
+  "generated_at" : "2026-08-30T22:37:24Z",
+  "passed" : 1,
+  "results" : [
+    {
+      "display_name" : "json-decoding-diagnostics",
+      "duration_seconds" : 0.0008488893508911133,
+      "name" : "json-decoding-diagnostics",
+      "status" : "passed",
+      "tags" : [
+        "decoding",
+        "diagnostics",
+        "json",
+        "primitives"
+      ]
+    }
+  ],
+  "skipped" : 0,
+  "title" : "Primitives flow tests",
+  "total" : 1
+}

@@ -24,6 +24,22 @@ public struct JSONCoding: Sendable {
         makeDecoder()
     }
 
+    public func decode<Value: Decodable>(
+        _ type: Value.Type,
+        from data: Data
+    ) throws(JSONDecodingError) -> Value {
+        do {
+            return try decoder().decode(
+                type,
+                from: data
+            )
+        } catch {
+            throw JSONDecodingError(
+                error
+            )
+        }
+    }
+
     public static let `default` = Self()
 }
 
