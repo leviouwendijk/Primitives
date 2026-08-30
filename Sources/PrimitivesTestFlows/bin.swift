@@ -24,5 +24,16 @@ enum PrimitivesFlowSuite: TestFlowRegistry {
         ) {
             try await PrimitivesFlowTesting.runJSONDecodingDiagnostics()
         },
+        TestFlow(
+            "json-diagnostics-collection",
+            tags: [
+                "primitives",
+                "json",
+                "diagnostics",
+                "validation",
+            ]
+        ) {
+            try await PrimitivesFlowTesting.runJSONDiagnosticsCollection()
+        },
     ]
 }
