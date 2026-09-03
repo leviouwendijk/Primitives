@@ -5,11 +5,21 @@ public extension JSONEncoder.KeyEncodingStrategy {
         _ casing: Casing,
         separators: Separators = .common
     ) -> Self {
+        Self.casing(
+            style: casing.style,
+            separators: separators
+        )
+    }
+
+    static func casing(
+        style: Casing.Style,
+        separators: Separators = .common
+    ) -> Self {
         .custom { path in
             CasingCodingKey(
                 Case.convert(
                     path.last!.stringValue,
-                    to: casing,
+                    style: style,
                     separators: separators
                 )
             )
@@ -22,11 +32,21 @@ public extension JSONDecoder.KeyDecodingStrategy {
         _ casing: Casing,
         separators: Separators = .common
     ) -> Self {
+        Self.casing(
+            style: casing.style,
+            separators: separators
+        )
+    }
+
+    static func casing(
+        style: Casing.Style,
+        separators: Separators = .common
+    ) -> Self {
         .custom { path in
             CasingCodingKey(
                 Case.convert(
                     path.last!.stringValue,
-                    to: casing,
+                    style: style,
                     separators: separators
                 )
             )

@@ -19,6 +19,73 @@ public extension JSONValue {
             )
         }
 
+        public func `as`(
+            style: Casing.Style,
+            separators: Separators = .common
+        ) throws -> JSONValue {
+            func convert(
+                _ value: JSONValue
+            ) throws -> JSONValue {
+                switch value {
+                case .array(let values):
+                    return .array(
+                        try values.map {
+                            try convert(
+                                $0
+                            )
+                        }
+                    )
+
+                case .object(let object):
+                    var converted: [String: JSONValue] = [:]
+                    var sources: [String: String] = [:]
+
+                    converted.reserveCapacity(
+                        object.count
+                    )
+                    sources.reserveCapacity(
+                        object.count
+                    )
+
+                    for (key, nestedValue) in object {
+                        let convertedKey = Case.convert(
+                            key,
+                            style: style,
+                            separators: separators
+                        )
+
+                        if let first = sources[convertedKey] {
+                            throw JSONValueError.casingKeyCollision(
+                                first: first,
+                                second: key,
+                                result: convertedKey
+                            )
+                        }
+
+                        sources[convertedKey] = key
+                        converted[convertedKey] = try convert(
+                            nestedValue
+                        )
+                    }
+
+                    return .object(
+                        converted
+                    )
+
+                case .string,
+                     .int,
+                     .double,
+                     .bool,
+                     .null:
+                    return value
+                }
+            }
+
+            return try convert(
+                value
+            )
+        }
+
         public func camel(
             separators: Separators = .common
         ) throws -> JSONValue {

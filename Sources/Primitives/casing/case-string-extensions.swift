@@ -19,6 +19,17 @@ public extension String {
             )
         }
 
+        public func `as`(
+            style: Casing.Style,
+            separators: Separators = .common
+        ) -> String {
+            Case.convert(
+                value,
+                style: style,
+                separators: separators
+            )
+        }
+
         public func camel(
             separators: Separators = .common
         ) -> String {

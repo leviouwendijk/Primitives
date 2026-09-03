@@ -16,6 +16,18 @@ public extension JSONDecoder {
             return decoder
         }
 
+        public func `as`(
+            style: Casing.Style,
+            separators: Separators = .common
+        ) -> JSONDecoder {
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .casing(
+                style: style,
+                separators: separators
+            )
+            return decoder
+        }
+
         public func camel(
             separators: Separators = .common
         ) -> JSONDecoder {

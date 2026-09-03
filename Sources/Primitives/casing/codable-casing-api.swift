@@ -25,6 +25,22 @@ public struct CodableCasingAPI<Value: CasingCodable> {
         )
     }
 
+    public func `as`(
+        style: Casing.Style,
+        separators: Separators = .common,
+        sourceCoding: JSONCoding = .default
+    ) throws -> JSONValue {
+        let encoded = try JSONValueCodec.encodeValue(
+            value,
+            using: sourceCoding.encoder()
+        )
+
+        return try encoded.casing.as(
+            style: style,
+            separators: separators
+        )
+    }
+
     public func camel(
         separators: Separators = .common,
         sourceCoding: JSONCoding = .default
