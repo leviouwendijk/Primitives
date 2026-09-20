@@ -32,11 +32,13 @@ func values(
     _ tree: Tree<String>,
     traversal: TreeTraversal = .depth_first_preorder,
     descent: TreeDescentPolicy<String> = .unrestricted,
+    root_order: TreeRootOrderPolicy<String> = .natural,
     child_order: TreeChildOrderPolicy<String> = .natural
 ) -> [String] {
     tree.located(
         traversal: traversal,
         descent: descent,
+        root_order: root_order,
         child_order: child_order
     )
     .map { located in
@@ -108,6 +110,10 @@ func run_tree_tests() throws {
 
     let b = try address(
         0,
+        1
+    )
+
+    let other_root = try address(
         1
     )
 
@@ -208,6 +214,66 @@ func run_tree_tests() throws {
             "other",
         ],
         "reversed child order"
+    )
+
+    try expect(
+        values(
+            tree,
+            root_order: .reversed
+        ) == [
+            "other",
+            "root",
+            "a",
+            "a1",
+            "b",
+        ],
+        "reversed forest root order"
+    )
+
+    try expect(
+        values(
+            tree,
+            traversal: .depth_first_postorder,
+            root_order: .reversed
+        ) == [
+            "other",
+            "a1",
+            "a",
+            "b",
+            "root",
+        ],
+        "postorder respects forest root order"
+    )
+
+    try expect(
+        values(
+            tree,
+            traversal: .breadth_first,
+            root_order: .reversed
+        ) == [
+            "other",
+            "root",
+            "a",
+            "b",
+            "a1",
+        ],
+        "breadth-first respects forest root order"
+    )
+
+    let root_ordered = tree.located(
+        root_order: .reversed
+    )
+
+    try expect(
+        root_ordered.first?.address == other_root,
+        "forest ordering preserves original structural root address"
+    )
+
+    try expect(
+        root_ordered.first {
+            $0.node.value == "root"
+        }?.address == root,
+        "forest ordering does not renumber structural roots"
     )
 
     var events: [String] = []

@@ -12,15 +12,18 @@ public struct TreeEventWalk<Value>: Sequence {
 
     private let roots: [Tree<Value>.Node]
     private let descent: TreeDescentPolicy<Value>
+    private let root_order: TreeRootOrderPolicy<Value>
     private let child_order: TreeChildOrderPolicy<Value>
 
     fileprivate init(
         roots: [Tree<Value>.Node],
         descent: TreeDescentPolicy<Value>,
+        root_order: TreeRootOrderPolicy<Value>,
         child_order: TreeChildOrderPolicy<Value>
     ) {
         self.roots = roots
         self.descent = descent
+        self.root_order = root_order
         self.child_order = child_order
     }
 
@@ -28,6 +31,7 @@ public struct TreeEventWalk<Value>: Sequence {
         .init(
             roots: roots,
             descent: descent,
+            root_order: root_order,
             child_order: child_order
         )
     }
@@ -45,13 +49,18 @@ public extension TreeEventWalk {
         fileprivate init(
             roots: [Tree<Value>.Node],
             descent: TreeDescentPolicy<Value>,
+            root_order: TreeRootOrderPolicy<Value>,
             child_order: TreeChildOrderPolicy<Value>
         ) {
             self.descent = descent
             self.child_order = child_order
             self.stack = []
 
-            for rootIndex in roots.indices.reversed() {
+            let rootIndices = root_order(
+                roots
+            )
+
+            for rootIndex in rootIndices.reversed() {
                 stack.append(
                     .enter(
                         .init(
@@ -119,11 +128,13 @@ public extension TreeEventWalk {
 public extension Tree {
     func events(
         descent: TreeDescentPolicy<Value> = .unrestricted,
+        root_order: TreeRootOrderPolicy<Value> = .natural,
         child_order: TreeChildOrderPolicy<Value> = .natural
     ) -> TreeEventWalk<Value> {
         .init(
             roots: roots,
             descent: descent,
+            root_order: root_order,
             child_order: child_order
         )
     }

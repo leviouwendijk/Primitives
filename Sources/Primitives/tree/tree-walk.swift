@@ -4,17 +4,20 @@ public struct TreeWalk<Value>: Sequence {
     private let roots: [Tree<Value>.Node]
     private let traversal: TreeTraversal
     private let descent: TreeDescentPolicy<Value>
+    private let root_order: TreeRootOrderPolicy<Value>
     private let child_order: TreeChildOrderPolicy<Value>
 
     fileprivate init(
         roots: [Tree<Value>.Node],
         traversal: TreeTraversal,
         descent: TreeDescentPolicy<Value>,
+        root_order: TreeRootOrderPolicy<Value>,
         child_order: TreeChildOrderPolicy<Value>
     ) {
         self.roots = roots
         self.traversal = traversal
         self.descent = descent
+        self.root_order = root_order
         self.child_order = child_order
     }
 
@@ -23,6 +26,7 @@ public struct TreeWalk<Value>: Sequence {
             roots: roots,
             traversal: traversal,
             descent: descent,
+            root_order: root_order,
             child_order: child_order
         )
     }
@@ -52,6 +56,7 @@ public extension TreeWalk {
             roots: [Tree<Value>.Node],
             traversal: TreeTraversal,
             descent: TreeDescentPolicy<Value>,
+            root_order: TreeRootOrderPolicy<Value>,
             child_order: TreeChildOrderPolicy<Value>
         ) {
             self.traversal = traversal
@@ -65,9 +70,13 @@ public extension TreeWalk {
             self.breadth_first_next_level = []
             self.breadth_first_index = 0
 
+            let rootIndices = root_order(
+                roots
+            )
+
             switch traversal {
             case .depth_first_preorder:
-                for rootIndex in roots.indices.reversed() {
+                for rootIndex in rootIndices.reversed() {
                     depth_first_preorder_stack.append(
                         .init(
                             address: .init(
@@ -79,7 +88,7 @@ public extension TreeWalk {
                 }
 
             case .depth_first_postorder:
-                for rootIndex in roots.indices.reversed() {
+                for rootIndex in rootIndices.reversed() {
                     depth_first_postorder_stack.append(
                         .init(
                             located: .init(
@@ -94,7 +103,7 @@ public extension TreeWalk {
                 }
 
             case .breadth_first:
-                for rootIndex in roots.indices {
+                for rootIndex in rootIndices {
                     breadth_first_level.append(
                         .init(
                             address: .init(
@@ -238,12 +247,14 @@ public extension Tree {
     func walk(
         _ traversal: TreeTraversal = .depth_first_preorder,
         descent: TreeDescentPolicy<Value> = .unrestricted,
+        root_order: TreeRootOrderPolicy<Value> = .natural,
         child_order: TreeChildOrderPolicy<Value> = .natural
     ) -> TreeWalk<Value> {
         .init(
             roots: roots,
             traversal: traversal,
             descent: descent,
+            root_order: root_order,
             child_order: child_order
         )
     }
