@@ -53,18 +53,6 @@ public extension TreeExpansionDescentPolicy {
         }
     }
 
-    static func maximum_depth(
-        _ depth: Int
-    ) -> Self {
-        precondition(
-            depth >= 0
-        )
-
-        return descend_while { located in
-            located.address.depth < depth
-        }
-    }
-
     func and(
         _ other: Self
     ) -> Self {

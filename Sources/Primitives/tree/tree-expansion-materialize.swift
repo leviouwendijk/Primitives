@@ -1,5 +1,6 @@
 public extension TreeExpansion {
     func materialize(
+        limits: TreeTraversalLimits = .unlimited,
         descent: TreeExpansionDescentPolicy<Value> = .unrestricted,
         child_order: TreeExpansionChildOrderPolicy<Value> = .natural,
         revisit: TreeExpansionRevisitPolicy<Value>? = nil,
@@ -9,6 +10,7 @@ public extension TreeExpansion {
     ) throws -> Tree<Value> {
         var iterator = walk(
             .depth_first_postorder,
+            limits: limits,
             descent: descent,
             child_order: child_order,
             revisit: revisit

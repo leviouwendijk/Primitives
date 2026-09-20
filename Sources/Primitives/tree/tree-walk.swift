@@ -3,6 +3,7 @@ public struct TreeWalk<Value>: Sequence {
 
     private let roots: [Tree<Value>.Node]
     private let traversal: TreeTraversal
+    private let limits: TreeTraversalLimits
     private let descent: TreeDescentPolicy<Value>
     private let root_order: TreeRootOrderPolicy<Value>
     private let child_order: TreeChildOrderPolicy<Value>
@@ -10,12 +11,14 @@ public struct TreeWalk<Value>: Sequence {
     fileprivate init(
         roots: [Tree<Value>.Node],
         traversal: TreeTraversal,
+        limits: TreeTraversalLimits,
         descent: TreeDescentPolicy<Value>,
         root_order: TreeRootOrderPolicy<Value>,
         child_order: TreeChildOrderPolicy<Value>
     ) {
         self.roots = roots
         self.traversal = traversal
+        self.limits = limits
         self.descent = descent
         self.root_order = root_order
         self.child_order = child_order
@@ -25,6 +28,7 @@ public struct TreeWalk<Value>: Sequence {
         .init(
             roots: roots,
             traversal: traversal,
+            limits: limits,
             descent: descent,
             root_order: root_order,
             child_order: child_order
@@ -42,6 +46,7 @@ public extension TreeWalk {
         }
 
         private let traversal: TreeTraversal
+        private let limits: TreeTraversalLimits
         private let descent: TreeDescentPolicy<Value>
         private let child_order: TreeChildOrderPolicy<Value>
 
@@ -55,11 +60,13 @@ public extension TreeWalk {
         fileprivate init(
             roots: [Tree<Value>.Node],
             traversal: TreeTraversal,
+            limits: TreeTraversalLimits,
             descent: TreeDescentPolicy<Value>,
             root_order: TreeRootOrderPolicy<Value>,
             child_order: TreeChildOrderPolicy<Value>
         ) {
             self.traversal = traversal
+            self.limits = limits
             self.descent = descent
             self.child_order = child_order
 
@@ -149,7 +156,9 @@ private extension TreeWalk.Iterator {
             return nil
         }
 
-        if descent(located) == .descend {
+        if limits.allows_descent(
+            from: located.address
+        ), descent(located) == .descend {
             let childIndices = child_order(
                 located
             )
@@ -173,7 +182,9 @@ private extension TreeWalk.Iterator {
                 return entry.located
             }
 
-            guard descent(entry.located) == .descend else {
+            guard limits.allows_descent(
+                from: entry.located.address
+            ), descent(entry.located) == .descend else {
                 return entry.located
             }
 
@@ -212,7 +223,9 @@ private extension TreeWalk.Iterator {
 
                 breadth_first_index += 1
 
-                if descent(located) == .descend {
+                if limits.allows_descent(
+                    from: located.address
+                ), descent(located) == .descend {
                     let childIndices = child_order(
                         located
                     )
@@ -246,6 +259,7 @@ private extension TreeWalk.Iterator {
 public extension Tree {
     func walk(
         _ traversal: TreeTraversal = .depth_first_preorder,
+        limits: TreeTraversalLimits = .unlimited,
         descent: TreeDescentPolicy<Value> = .unrestricted,
         root_order: TreeRootOrderPolicy<Value> = .natural,
         child_order: TreeChildOrderPolicy<Value> = .natural
@@ -253,6 +267,7 @@ public extension Tree {
         .init(
             roots: roots,
             traversal: traversal,
+            limits: limits,
             descent: descent,
             root_order: root_order,
             child_order: child_order

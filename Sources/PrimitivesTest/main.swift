@@ -31,12 +31,14 @@ func address(
 func values(
     _ tree: Tree<String>,
     traversal: TreeTraversal = .depth_first_preorder,
+    limits: TreeTraversalLimits = .unlimited,
     descent: TreeDescentPolicy<String> = .unrestricted,
     root_order: TreeRootOrderPolicy<String> = .natural,
     child_order: TreeChildOrderPolicy<String> = .natural
 ) -> [String] {
     tree.located(
         traversal: traversal,
+        limits: limits,
         descent: descent,
         root_order: root_order,
         child_order: child_order
@@ -190,8 +192,8 @@ func run_tree_tests() throws {
     try expect(
         values(
             tree,
-            descent: .maximum_depth(
-                1
+            limits: try .init(
+                maximum_depth: 1
             )
         ) == [
             "root",
@@ -199,8 +201,23 @@ func run_tree_tests() throws {
             "b",
             "other",
         ],
-        "maximum-depth descent"
+        "maximum-depth traversal limit"
     )
+
+    do {
+        _ = try TreeTraversalLimits(
+            maximum_depth: -1
+        )
+
+        throw TreeTestError.failed(
+            "negative traversal depth unexpectedly succeeded"
+        )
+    } catch let error as TreeTraversalLimitError {
+        try expect(
+            error == .negative_maximum_depth(-1),
+            "negative traversal depth has typed error"
+        )
+    }
 
     try expect(
         values(
@@ -616,6 +633,54 @@ func run_tree_tests() throws {
             "b",
         ],
         "global revisit skips previously accepted identity"
+    )
+
+    var limitedProviderCalls: [String] = []
+
+    let limitedExpansion = TreeExpansion<String>(
+        roots: [
+            "root",
+        ]
+    ) { located in
+        limitedProviderCalls.append(
+            located.value
+        )
+
+        switch located.value {
+        case "root":
+            return [
+                "child",
+            ]
+
+        case "child":
+            return [
+                "grandchild",
+            ]
+
+        default:
+            return []
+        }
+    }
+
+    try expect(
+        try expansion_values(
+            limitedExpansion.walk(
+                limits: .init(
+                    maximum_depth: 1
+                )
+            )
+        ) == [
+            "root",
+            "child",
+        ],
+        "expansion maximum depth limits accepted topology"
+    )
+
+    try expect(
+        limitedProviderCalls == [
+            "root",
+        ],
+        "expansion maximum depth avoids child discovery beyond limit"
     )
 
     let depthFirstEncounter = TreeExpansion<String>(

@@ -1,6 +1,7 @@
 public extension Tree {
     func forEachNode(
         traversal: TreeTraversal = .depth_first_preorder,
+        limits: TreeTraversalLimits = .unlimited,
         descent: TreeDescentPolicy<Value> = .unrestricted,
         root_order: TreeRootOrderPolicy<Value> = .natural,
         child_order: TreeChildOrderPolicy<Value> = .natural,
@@ -10,6 +11,7 @@ public extension Tree {
     ) rethrows {
         for located in walk(
             traversal,
+            limits: limits,
             descent: descent,
             root_order: root_order,
             child_order: child_order
@@ -27,6 +29,7 @@ public extension Tree {
 
     func located(
         traversal: TreeTraversal = .depth_first_preorder,
+        limits: TreeTraversalLimits = .unlimited,
         descent: TreeDescentPolicy<Value> = .unrestricted,
         root_order: TreeRootOrderPolicy<Value> = .natural,
         child_order: TreeChildOrderPolicy<Value> = .natural
@@ -34,6 +37,7 @@ public extension Tree {
         Array(
             walk(
                 traversal,
+                limits: limits,
                 descent: descent,
                 root_order: root_order,
                 child_order: child_order

@@ -1,6 +1,7 @@
 public struct TreeExpansionWalk<Value> {
     private let expansion: TreeExpansion<Value>
     private let traversal: TreeTraversal
+    private let limits: TreeTraversalLimits
     private let descent: TreeExpansionDescentPolicy<Value>
     private let child_order: TreeExpansionChildOrderPolicy<Value>
     private let revisit: TreeExpansionRevisitPolicy<Value>?
@@ -8,12 +9,14 @@ public struct TreeExpansionWalk<Value> {
     fileprivate init(
         expansion: TreeExpansion<Value>,
         traversal: TreeTraversal,
+        limits: TreeTraversalLimits,
         descent: TreeExpansionDescentPolicy<Value>,
         child_order: TreeExpansionChildOrderPolicy<Value>,
         revisit: TreeExpansionRevisitPolicy<Value>?
     ) {
         self.expansion = expansion
         self.traversal = traversal
+        self.limits = limits
         self.descent = descent
         self.child_order = child_order
         self.revisit = revisit
@@ -23,6 +26,7 @@ public struct TreeExpansionWalk<Value> {
         .init(
             expansion: expansion,
             traversal: traversal,
+            limits: limits,
             descent: descent,
             child_order: child_order,
             revisit: revisit
@@ -67,6 +71,7 @@ public extension TreeExpansionWalk {
 
         private let expansion: TreeExpansion<Value>
         private let traversal: TreeTraversal
+        private let limits: TreeTraversalLimits
         private let descent: TreeExpansionDescentPolicy<Value>
         private let child_order: TreeExpansionChildOrderPolicy<Value>
         private let revisit: TreeExpansionRevisitPolicy<Value>?
@@ -88,12 +93,14 @@ public extension TreeExpansionWalk {
         fileprivate init(
             expansion: TreeExpansion<Value>,
             traversal: TreeTraversal,
+            limits: TreeTraversalLimits,
             descent: TreeExpansionDescentPolicy<Value>,
             child_order: TreeExpansionChildOrderPolicy<Value>,
             revisit: TreeExpansionRevisitPolicy<Value>?
         ) {
             self.expansion = expansion
             self.traversal = traversal
+            self.limits = limits
             self.descent = descent
             self.child_order = child_order
             self.revisit = revisit
@@ -267,7 +274,9 @@ fileprivate extension TreeExpansionWalk.Iterator {
     func make_child_cursor(
         of pending: Pending
     ) throws -> ChildCursor? {
-        guard descent(
+        guard limits.allows_descent(
+            from: pending.located.address
+        ), descent(
             pending.located
         ) == .descend else {
             return nil
@@ -539,6 +548,7 @@ fileprivate extension TreeExpansionWalk.Iterator {
 public extension TreeExpansion {
     func walk(
         _ traversal: TreeTraversal = .depth_first_preorder,
+        limits: TreeTraversalLimits = .unlimited,
         descent: TreeExpansionDescentPolicy<Value> = .unrestricted,
         child_order: TreeExpansionChildOrderPolicy<Value> = .natural,
         revisit: TreeExpansionRevisitPolicy<Value>? = nil
@@ -546,6 +556,7 @@ public extension TreeExpansion {
         .init(
             expansion: self,
             traversal: traversal,
+            limits: limits,
             descent: descent,
             child_order: child_order,
             revisit: revisit
