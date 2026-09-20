@@ -1,4 +1,10 @@
-public struct TreeAddress: Sendable, Equatable, Hashable {
+public struct TreeAddress:
+    Sendable,
+    Equatable,
+    Hashable,
+    Codable,
+    Comparable
+{
     public let root: Int
     public let descendants: [Int]
 
@@ -57,6 +63,108 @@ public extension TreeAddress {
         return .init(
             validRoot: root,
             descendants: descendants + [index]
+        )
+    }
+
+    func is_ancestor(
+        of other: Self
+    ) -> Bool {
+        guard root == other.root else {
+            return false
+        }
+
+        guard descendants.count < other.descendants.count else {
+            return false
+        }
+
+        return other.descendants
+            .prefix(
+                descendants.count
+            )
+            .elementsEqual(
+                descendants
+            )
+    }
+
+    func is_descendant(
+        of other: Self
+    ) -> Bool {
+        other.is_ancestor(
+            of: self
+        )
+    }
+
+    static func < (
+        lhs: Self,
+        rhs: Self
+    ) -> Bool {
+        if lhs.root != rhs.root {
+            return lhs.root < rhs.root
+        }
+
+        let sharedCount = Swift.min(
+            lhs.descendants.count,
+            rhs.descendants.count
+        )
+
+        for index in 0..<sharedCount {
+            let lhsIndex = lhs.descendants[index]
+            let rhsIndex = rhs.descendants[index]
+
+            if lhsIndex != rhsIndex {
+                return lhsIndex < rhsIndex
+            }
+        }
+
+        return lhs.descendants.count
+            < rhs.descendants.count
+    }
+}
+
+extension TreeAddress {
+    private enum CodingKeys: String, CodingKey {
+        case root
+        case descendants
+    }
+
+    public init(
+        from decoder: Decoder
+    ) throws {
+        let container = try decoder.container(
+            keyedBy: CodingKeys.self
+        )
+
+        let root = try container.decode(
+            Int.self,
+            forKey: .root
+        )
+
+        let descendants = try container.decode(
+            [Int].self,
+            forKey: .descendants
+        )
+
+        try self.init(
+            root: root,
+            descendants: descendants
+        )
+    }
+
+    public func encode(
+        to encoder: Encoder
+    ) throws {
+        var container = encoder.container(
+            keyedBy: CodingKeys.self
+        )
+
+        try container.encode(
+            root,
+            forKey: .root
+        )
+
+        try container.encode(
+            descendants,
+            forKey: .descendants
         )
     }
 }

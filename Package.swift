@@ -13,6 +13,10 @@ let package = Package(
             name: "Primitives",
             targets: ["Primitives"]
         ),
+        .executable(
+            name: "treetest",
+            targets: ["PrimitivesTest"]
+        ),
         // .executable(
         //     name: "primtest",
         //     targets: ["PrimitivesTestFlows"]
@@ -27,6 +31,12 @@ let package = Package(
     targets: [
         .target(
             name: "Primitives"
+        ),
+        .executableTarget(
+            name: "PrimitivesTest",
+            dependencies: [
+                "Primitives",
+            ]
         ),
         // .executableTarget(
         //     name: "PrimitivesTestFlows",

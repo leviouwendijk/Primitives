@@ -9,12 +9,12 @@ public struct Tree<Value> {
 
     public struct Node {
         public var value: Value
-        public var annotations: [Annotation]
+        public var annotations: [TreeAnnotation]
         public var children: [Node]
 
         public init(
             _ value: Value,
-            annotations: [Annotation] = [],
+            annotations: [TreeAnnotation] = [],
             children: [Node] = []
         ) {
             self.value = value
@@ -32,3 +32,6 @@ extension Tree: Equatable where Value: Equatable {}
 
 extension Tree.Node: Hashable where Value: Hashable {}
 extension Tree: Hashable where Value: Hashable {}
+
+extension Tree.Node: Codable where Value: Codable {}
+extension Tree: Codable where Value: Codable {}

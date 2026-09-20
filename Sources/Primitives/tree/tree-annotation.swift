@@ -1,11 +1,15 @@
-extension Tree {
-    public struct Annotation: Sendable, Equatable, Hashable {
-        public var text: String
+public struct TreeAnnotation {
+    public var text: String
 
-        public init(
-            _ text: String
-        ) {
-            self.text = text
-        }
+    public init(
+        _ text: String
+    ) {
+        self.text = text
     }
 }
+
+extension TreeAnnotation: Sendable {}
+extension TreeAnnotation: Equatable {}
+extension TreeAnnotation: Hashable {}
+extension TreeAnnotation: Codable {}
+

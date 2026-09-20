@@ -1,44 +1,40 @@
 public extension Tree {
     func forEachNode(
+        traversal: TreeTraversal = .depth_first_preorder,
+        descent: TreeDescentPolicy<Value> = .unrestricted,
+        child_order: TreeChildOrderPolicy<Value> = .natural,
         _ body: (
             _ located: LocatedNode
         ) throws -> Void
     ) rethrows {
-        for (rootIndex, root) in roots.enumerated() {
-            let address = TreeAddress(
-                validRoot: rootIndex
-            )
-
-            try walk(
-                node: root,
-                at: address,
-                body
+        for located in walk(
+            traversal,
+            descent: descent,
+            child_order: child_order
+        ) {
+            try body(
+                located
             )
         }
     }
 
     var addresses: [TreeAddress] {
-        var addresses: [TreeAddress] = []
-
-        forEachNode { located in
-            addresses.append(
-                located.address
-            )
-        }
-
-        return addresses
+        walk()
+            .map(\.address)
     }
 
-    func located() -> [LocatedNode] {
-        var result: [LocatedNode] = []
-
-        forEachNode { located in
-            result.append(
-                located
+    func located(
+        traversal: TreeTraversal = .depth_first_preorder,
+        descent: TreeDescentPolicy<Value> = .unrestricted,
+        child_order: TreeChildOrderPolicy<Value> = .natural
+    ) -> [LocatedNode] {
+        Array(
+            walk(
+                traversal,
+                descent: descent,
+                child_order: child_order
             )
-        }
-
-        return result
+        )
     }
 
     func node(
@@ -59,32 +55,5 @@ public extension Tree {
         }
 
         return node
-    }
-}
-
-private extension Tree {
-    func walk(
-        node: Node,
-        at address: TreeAddress,
-        _ body: (
-            _ located: LocatedNode
-        ) throws -> Void
-    ) rethrows {
-        try body(
-            .init(
-                address: address,
-                node: node
-            )
-        )
-
-        for (index, child) in node.children.enumerated() {
-            try walk(
-                node: child,
-                at: address.child(
-                    validIndex: index
-                ),
-                body
-            )
-        }
     }
 }

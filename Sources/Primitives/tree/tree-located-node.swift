@@ -16,3 +16,4 @@ extension Tree {
 extension Tree.LocatedNode: Sendable where Value: Sendable {}
 extension Tree.LocatedNode: Equatable where Value: Equatable {}
 extension Tree.LocatedNode: Hashable where Value: Hashable {}
+extension Tree.LocatedNode: Codable where Value: Codable {}
