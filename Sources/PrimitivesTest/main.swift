@@ -618,6 +618,127 @@ func run_tree_tests() throws {
         "global revisit skips previously accepted identity"
     )
 
+    let depthFirstEncounter = TreeExpansion<String>(
+        roots: [
+            "root",
+        ]
+    ) { located in
+        switch located.value {
+        case "root":
+            [
+                "a",
+                "shared",
+                "tail",
+            ]
+
+        case "a":
+            [
+                "shared",
+            ]
+
+        default:
+            []
+        }
+    }
+
+    var preorderIterator = depthFirstEncounter.walk(
+        revisit: .global(
+            identity: { $0 }
+        )
+    )
+    .makeIterator()
+
+    var preorderLocated: [TreeExpansion<String>.Located] = []
+
+    while let located = try preorderIterator.next() {
+        preorderLocated.append(
+            located
+        )
+    }
+
+    try expect(
+        preorderLocated.map(\.value) == [
+            "root",
+            "a",
+            "shared",
+            "tail",
+        ],
+        "DFS global revisit follows actual preorder encounter"
+    )
+
+    try expect(
+        preorderLocated.map(\.address) == [
+            try address(0),
+            try address(0, 0),
+            try address(0, 0, 0),
+            try address(0, 1),
+        ],
+        "DFS global revisit assigns dense addresses at accepted encounter points"
+    )
+
+    var postorderIterator = depthFirstEncounter.walk(
+        .depth_first_postorder,
+        revisit: .global(
+            identity: { $0 }
+        )
+    )
+    .makeIterator()
+
+    var postorderLocated: [TreeExpansion<String>.Located] = []
+
+    while let located = try postorderIterator.next() {
+        postorderLocated.append(
+            located
+        )
+    }
+
+    try expect(
+        postorderLocated.map(\.value) == [
+            "shared",
+            "a",
+            "tail",
+            "root",
+        ],
+        "DFS global revisit follows depth-first discovery under postorder yielding"
+    )
+
+    try expect(
+        postorderLocated.map(\.address) == [
+            try address(0, 0, 0),
+            try address(0, 0),
+            try address(0, 1),
+            try address(0),
+        ],
+        "postorder retains dense depth-first accepted topology addresses"
+    )
+
+    let encounterMaterialized = try depthFirstEncounter.materialize(
+        revisit: .global(
+            identity: { $0 }
+        )
+    )
+
+    try expect(
+        encounterMaterialized.node(
+            at: try address(0, 0, 0)
+        )?.value == "shared",
+        "materialization keeps first DFS shared identity under its encountered parent"
+    )
+
+    try expect(
+        encounterMaterialized.node(
+            at: try address(0, 1)
+        )?.value == "tail",
+        "materialization compacts skipped sibling addresses"
+    )
+
+    try expect(
+        encounterMaterialized.node(
+            at: try address(0, 2)
+        ) == nil,
+        "materialization has no address gap after skipped global revisit"
+    )
+
     let cyclic = TreeExpansion<String>(
         roots: [
             "a",

@@ -43,14 +43,26 @@ public extension TreeExpansionWalk {
             let ancestors: [IdentityLocation]
         }
 
+        fileprivate struct ChildCursor {
+            let parent: Pending
+            let discovered: [Value]
+            let indices: [Int]
+            let ancestors: [IdentityLocation]
+
+            var position: Int
+            var output_index: Int
+        }
+
         fileprivate enum PreorderEntry {
             case yield(Pending)
             case expand(Pending)
+            case children(ChildCursor)
         }
 
-        fileprivate struct PostorderEntry {
-            let pending: Pending
-            let expanded: Bool
+        fileprivate enum PostorderEntry {
+            case node(Pending)
+            case children(ChildCursor)
+            case yield(Pending)
         }
 
         private let expansion: TreeExpansion<Value>
@@ -252,13 +264,13 @@ fileprivate extension TreeExpansionWalk.Iterator {
         ]
     }
 
-    mutating func expanded_children(
+    func make_child_cursor(
         of pending: Pending
-    ) throws -> [Pending] {
+    ) throws -> ChildCursor? {
         guard descent(
             pending.located
         ) == .descend else {
-            return []
+            return nil
         }
 
         let discovered = try expansion.children(
@@ -301,32 +313,69 @@ fileprivate extension TreeExpansionWalk.Iterator {
             }
         }
 
-        let ancestors = descendants_ancestors(
-            of: pending
+        return .init(
+            parent: pending,
+            discovered: discovered,
+            indices: indices,
+            ancestors: descendants_ancestors(
+                of: pending
+            ),
+            position: 0,
+            output_index: 0
         )
+    }
 
-        var accepted: [Pending] = []
-        accepted.reserveCapacity(
-            discovered.count
-        )
+    mutating func next_child(
+        from cursor: inout ChildCursor
+    ) throws -> Pending? {
+        while cursor.position < cursor.indices.count {
+            let sourceIndex = cursor.indices[
+                cursor.position
+            ]
 
-        for sourceIndex in indices {
-            let value = discovered[
+            cursor.position += 1
+
+            let value = cursor.discovered[
                 sourceIndex
             ]
 
-            let address = pending.located.address.child(
-                validIndex: accepted.count
+            let address = cursor.parent.located.address.child(
+                validIndex: cursor.output_index
             )
 
             guard let child = try accepted_pending(
                 value: value,
                 address: address,
-                ancestors: ancestors
+                ancestors: cursor.ancestors
             ) else {
                 continue
             }
 
+            cursor.output_index += 1
+
+            return child
+        }
+
+        return nil
+    }
+
+    mutating func expanded_children(
+        of pending: Pending
+    ) throws -> [Pending] {
+        guard var cursor = try make_child_cursor(
+            of: pending
+        ) else {
+            return []
+        }
+
+        var accepted: [Pending] = []
+        accepted.reserveCapacity(
+            cursor.discovered.count
+        )
+
+        while let child = try next_child(
+            from: &cursor
+        ) {
             accepted.append(
                 child
             )
@@ -349,11 +398,26 @@ fileprivate extension TreeExpansionWalk.Iterator {
                     return pending.located
 
                 case .expand(let pending):
-                    let children = try expanded_children(
+                    if let cursor = try make_child_cursor(
                         of: pending
-                    )
+                    ) {
+                        depth_first_preorder_stack.append(
+                            .children(
+                                cursor
+                            )
+                        )
+                    }
 
-                    for child in children.reversed() {
+                case .children(var cursor):
+                    if let child = try next_child(
+                        from: &cursor
+                    ) {
+                        depth_first_preorder_stack.append(
+                            .children(
+                                cursor
+                            )
+                        )
+
                         depth_first_preorder_stack.append(
                             .yield(
                                 child
@@ -380,28 +444,43 @@ fileprivate extension TreeExpansionWalk.Iterator {
     mutating func walk_depth_first_postorder() throws -> TreeExpansion<Value>.Located? {
         while true {
             if let entry = depth_first_postorder_stack.popLast() {
-                if entry.expanded {
-                    return entry.pending.located
-                }
-
-                depth_first_postorder_stack.append(
-                    .init(
-                        pending: entry.pending,
-                        expanded: true
-                    )
-                )
-
-                let children = try expanded_children(
-                    of: entry.pending
-                )
-
-                for child in children.reversed() {
+                switch entry {
+                case .node(let pending):
                     depth_first_postorder_stack.append(
-                        .init(
-                            pending: child,
-                            expanded: false
+                        .yield(
+                            pending
                         )
                     )
+
+                    if let cursor = try make_child_cursor(
+                        of: pending
+                    ) {
+                        depth_first_postorder_stack.append(
+                            .children(
+                                cursor
+                            )
+                        )
+                    }
+
+                case .children(var cursor):
+                    if let child = try next_child(
+                        from: &cursor
+                    ) {
+                        depth_first_postorder_stack.append(
+                            .children(
+                                cursor
+                            )
+                        )
+
+                        depth_first_postorder_stack.append(
+                            .node(
+                                child
+                            )
+                        )
+                    }
+
+                case .yield(let pending):
+                    return pending.located
                 }
 
                 continue
@@ -412,9 +491,8 @@ fileprivate extension TreeExpansionWalk.Iterator {
             }
 
             depth_first_postorder_stack.append(
-                .init(
-                    pending: root,
-                    expanded: false
+                .node(
+                    root
                 )
             )
         }
