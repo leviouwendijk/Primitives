@@ -1,4 +1,8 @@
-public struct Separators: Sendable, Hashable {
+public struct Separators:
+    Sendable,
+    Hashable,
+    Codable
+{
     public let scalars: Set<UnicodeScalar>
 
     public init<S: Sequence>(
@@ -24,6 +28,37 @@ public struct Separators: Sendable, Hashable {
     ) -> Bool {
         scalars.contains(
             scalar
+        )
+    }
+
+    public init(
+        from decoder: Decoder
+    ) throws {
+        let container = try decoder.singleValueContainer()
+        let value = try container.decode(
+            String.self
+        )
+
+        self.init(
+            value.unicodeScalars
+        )
+    }
+
+    public func encode(
+        to encoder: Encoder
+    ) throws {
+        var container = encoder.singleValueContainer()
+        let ordered = scalars.sorted {
+            $0.value < $1.value
+        }
+        let value = String(
+            String.UnicodeScalarView(
+                ordered
+            )
+        )
+
+        try container.encode(
+            value
         )
     }
 

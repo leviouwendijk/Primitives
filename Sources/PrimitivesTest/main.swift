@@ -1387,6 +1387,7 @@ func run_tree_tests() throws {
 }
 
 do {
+    try run_json_coding_tests()
     try run_tree_tests()
     print(
         "treetest: passed"

@@ -2,6 +2,15 @@ import Foundation
 
 public extension JSONEncoder.KeyEncodingStrategy {
     static func casing(
+        _ conversion: CasingConversion
+    ) -> Self {
+        casing(
+            conversion.destination,
+            separators: conversion.separators
+        )
+    }
+
+    static func casing(
         _ casing: Casing,
         separators: Separators = .common
     ) -> Self {
@@ -28,6 +37,15 @@ public extension JSONEncoder.KeyEncodingStrategy {
 }
 
 public extension JSONDecoder.KeyDecodingStrategy {
+    static func casing(
+        _ conversion: CasingConversion
+    ) -> Self {
+        casing(
+            conversion.destination,
+            separators: conversion.separators
+        )
+    }
+
     static func casing(
         _ casing: Casing,
         separators: Separators = .common

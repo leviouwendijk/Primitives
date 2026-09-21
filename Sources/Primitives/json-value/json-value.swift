@@ -79,11 +79,23 @@ public enum JSONValue: Codable, Sendable, Hashable, Equatable {
     public var stringValue: String {
         get throws {
             switch self {
-            case .string(let s): return s
-            case .int(let i): return String(i)
-            case .double(let d): return String(d)
-            case .bool(let b): return String(b)
-            default: throw JSONValueError.typeMismatch(expected: "String/Int/Double/Bool", actual: self)
+            case .string(let s): 
+                return s
+
+            case .int(let i): 
+                return String(i)
+
+            case .double(let d): 
+                return String(d)
+
+            case .bool(let b): 
+                return String(b)
+
+            default:
+                throw JSONValueError.typeMismatch(
+                    expected: "String/Int/Double/Bool",
+                    actual: self
+                )
             }
         }
     }
@@ -91,13 +103,29 @@ public enum JSONValue: Codable, Sendable, Hashable, Equatable {
     public var intValue: Int {
         get throws {
             switch self {
-            case .int(let i): return i
+            case .int(let i):
+                return i
+
             case .string(let s):
-                if let val = Int(s) { return val }
-                throw JSONValueError.invalidCast(description: "Cannot convert string '\(s)' to Int")
-            case .double(let d): return Int(d)
-            case .bool(let b): return b ? 1 : 0
-            default: throw JSONValueError.typeMismatch(expected: "Int/String/Double/Bool", actual: self)
+                if let value = Int(s) {
+                    return value
+                }
+
+                throw JSONValueError.invalidCast(
+                    description: "Cannot convert string '\(s)' to Int"
+                )
+
+            case .double(let d):
+                return Int(d)
+
+            case .bool(let b):
+                return b ? 1 : 0
+
+            default:
+                throw JSONValueError.typeMismatch(
+                    expected: "Int/String/Double/Bool",
+                    actual: self
+                )
             }
         }
     }
@@ -105,13 +133,29 @@ public enum JSONValue: Codable, Sendable, Hashable, Equatable {
     public var doubleValue: Double {
         get throws {
             switch self {
-            case .double(let d): return d
-            case .int(let i): return Double(i)
+            case .double(let d):
+                return d
+
+            case .int(let i):
+                return Double(i)
+
             case .string(let s):
-                if let val = Double(s) { return val }
-                throw JSONValueError.invalidCast(description: "Cannot convert string '\(s)' to Double")
-            case .bool(let b): return b ? 1.0 : 0.0
-            default: throw JSONValueError.typeMismatch(expected: "Double/Int/String/Bool", actual: self)
+                if let value = Double(s) {
+                    return value
+                }
+
+                throw JSONValueError.invalidCast(
+                    description: "Cannot convert string '\(s)' to Double"
+                )
+
+            case .bool(let b):
+                return b ? 1.0 : 0.0
+
+            default:
+                throw JSONValueError.typeMismatch(
+                    expected: "Double/Int/String/Bool",
+                    actual: self
+                )
             }
         }
     }
@@ -119,42 +163,95 @@ public enum JSONValue: Codable, Sendable, Hashable, Equatable {
     public var boolValue: Bool {
         get throws {
             switch self {
-            case .bool(let b): return b
+            case .bool(let b):
+                return b
+
             case .string(let s):
-                let lower = s.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-                if lower == "true" || lower == "1" { return true }
-                if lower == "false" || lower == "0" { return false }
-                throw JSONValueError.invalidCast(description: "Cannot convert string '\(s)' to Bool")
-            case .int(let i): return i != 0
-            case .double(let d): return d != 0.0
-            default: throw JSONValueError.typeMismatch(expected: "Bool/String/Int/Double", actual: self)
+                let normalized = s
+                    .lowercased()
+                    .trimmingCharacters(
+                        in: .whitespacesAndNewlines
+                    )
+
+                if normalized == "true" || normalized == "1" {
+                    return true
+                }
+
+                if normalized == "false" || normalized == "0" {
+                    return false
+                }
+
+                throw JSONValueError.invalidCast(
+                    description: "Cannot convert string '\(s)' to Bool"
+                )
+
+            case .int(let i):
+                return i != 0
+
+            case .double(let d):
+                return d != 0.0
+
+            default:
+                throw JSONValueError.typeMismatch(
+                    expected: "Bool/String/Int/Double",
+                    actual: self
+                )
             }
         }
     }
 
     public var arrayValue: [JSONValue] {
         get throws {
-            if case .array(let arr) = self { return arr }
-            throw JSONValueError.typeMismatch(expected: "Array", actual: self)
+            if case .array(let array) = self {
+                return array
+            }
+
+            throw JSONValueError.typeMismatch(
+                expected: "Array",
+                actual: self
+            )
         }
     }
 
     public var objectValue: [String: JSONValue] {
         get throws {
-            if case .object(let dict) = self { return dict }
-            throw JSONValueError.typeMismatch(expected: "Object", actual: self)
+            if case .object(let object) = self {
+                return object
+            }
+
+            throw JSONValueError.typeMismatch(
+                expected: "Object",
+                actual: self
+            )
         }
     }
 
     public func toAny() -> Any {
         switch self {
-        case .null: return NSNull()
-        case .bool(let b): return b
-        case .int(let i): return i
-        case .double(let d): return d
-        case .string(let s): return s
-        case .array(let a): return a.map { $0.toAny() }
-        case .object(let o): return o.mapValues { $0.toAny() }
+        case .null:
+            return NSNull()
+
+        case .bool(let b):
+            return b
+
+        case .int(let i):
+            return i
+
+        case .double(let d):
+            return d
+
+        case .string(let s):
+            return s
+
+        case .array(let array):
+            return array.map {
+                $0.toAny()
+            }
+
+        case .object(let object):
+            return object.mapValues {
+                $0.toAny()
+            }
         }
     }
 }
@@ -175,25 +272,3 @@ extension JSONValue {
     }
 }
 
-// extension JSONValue {
-//     public func `as`<T: Decodable>(_ type: T.Type) throws -> T {
-//         let data = try JSONEncoder().encode(self)
-//         return try JSONDecoder().decode(T.self, from: data)
-//     }
-// }
-
-extension JSONValue {
-    public func `as`<T: Decodable>(
-        _ type: T.Type,
-        using decoder: JSONDecoder = JSONDecoder()
-    ) throws -> T {
-        let data = try JSONEncoder().encode(
-            self
-        )
-
-        return try decoder.decode(
-            T.self,
-            from: data
-        )
-    }
-}

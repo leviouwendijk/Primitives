@@ -14,9 +14,8 @@ public struct CodableCasingAPI<Value: CasingCodable> {
         separators: Separators = .common,
         sourceCoding: JSONCoding = .default
     ) throws -> JSONValue {
-        let encoded = try JSONValueCodec.encodeValue(
-            value,
-            using: sourceCoding.encoder()
+        let encoded = try sourceCoding.value(
+            value
         )
 
         return try encoded.casing.as(
@@ -30,9 +29,8 @@ public struct CodableCasingAPI<Value: CasingCodable> {
         separators: Separators = .common,
         sourceCoding: JSONCoding = .default
     ) throws -> JSONValue {
-        let encoded = try JSONValueCodec.encodeValue(
-            value,
-            using: sourceCoding.encoder()
+        let encoded = try sourceCoding.value(
+            value
         )
 
         return try encoded.casing.as(

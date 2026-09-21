@@ -19,9 +19,8 @@ public struct Cased<Value: CasingCodable>: Encodable {
     public func encode(
         to encoder: Encoder
     ) throws {
-        let encoded = try JSONValueCodec.encodeValue(
-            value,
-            using: sourceCoding.encoder()
+        let encoded = try sourceCoding.value(
+            value
         )
 
         let cased = try encoded.casing.as(

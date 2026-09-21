@@ -45,31 +45,51 @@ public struct JSONCoding: Sendable {
 
 public extension JSONCoding {
     static func casing(
-        decodeTo: Casing? = nil,
-        encodeAs: Casing? = nil,
-        separators: Separators = .common
+        decode: CasingConversion? = nil,
+        encode: CasingConversion? = nil
     ) -> Self {
         .init(
             encoder: {
-                guard let encodeAs else {
-                    return JSONEncoder()
+                let encoder = JSONEncoder()
+
+                if let encode {
+                    encoder.keyEncodingStrategy = .casing(
+                        encode
+                    )
                 }
 
-                return JSONEncoder.casing.as(
-                    encodeAs,
-                    separators: separators
-                )
+                return encoder
             },
             decoder: {
-                guard let decodeTo else {
-                    return JSONDecoder()
+                let decoder = JSONDecoder()
+
+                if let decode {
+                    decoder.keyDecodingStrategy = .casing(
+                        decode
+                    )
                 }
 
-                return JSONDecoder.casing.as(
-                    decodeTo,
-                    separators: separators
-                )
+                return decoder
             }
+        )
+    }
+
+    static func casing(
+        decoded: Casing,
+        encoded: Casing,
+        separators: Separators = .common
+    ) -> Self {
+        casing(
+            decode: .init(
+                from: encoded,
+                to: decoded,
+                separators: separators
+            ),
+            encode: .init(
+                from: decoded,
+                to: encoded,
+                separators: separators
+            )
         )
     }
 }
