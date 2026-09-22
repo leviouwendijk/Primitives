@@ -12,7 +12,7 @@ where Self: Encodable {
         )
     }
 
-    func jsonValue() throws -> JSONValue {
+    func jsonvalue() throws -> JSONValue {
         try Self.jsoncoding.value(
             self
         )

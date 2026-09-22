@@ -99,7 +99,7 @@ func run_json_coding_tests() throws {
         "JSONCoding.encode applies configured casing"
     )
 
-    let protocolValue = try fixture.jsonValue()
+    let protocolValue = try fixture.jsonvalue()
     let protocolDecoded = try JSONCodingFixture.decode(
         protocolValue
     )
