@@ -1,4 +1,4 @@
-import Darwin
+import Testing
 import Foundation
 import Primitives
 
@@ -9,11 +9,26 @@ enum TreeTestError: Error {
 
 func expect(
     _ condition: @autoclosure () throws -> Bool,
-    _ message: String
+    _ message: String,
+    fileID: String = #fileID,
+    filePath: String = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
 ) throws {
     guard try condition() else {
-        throw TreeTestError.failed(
-            message
+        throw TestRequirementFailure(
+            issue: TestIssue(
+                kind: .requirement,
+                message: message,
+                sourceLocation: .init(
+                    fileID: fileID,
+                    filePath: filePath,
+                    line: line,
+                    column: column
+                ),
+                actual: "false",
+                expected: "true"
+            )
         )
     }
 }
@@ -1386,18 +1401,3 @@ func run_tree_tests() throws {
     }
 }
 
-do {
-    try run_json_coding_tests()
-    try run_tree_tests()
-    print(
-        "treetest: passed"
-    )
-} catch {
-    print(
-        "treetest: failed: \(error)"
-    )
-
-    exit(
-        1
-    )
-}

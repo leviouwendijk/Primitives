@@ -1,6 +1,6 @@
 import Foundation
 import Primitives
-import TestFlows
+import Testing
 
 private struct CasingFixture: Decodable {
     let someValue: Int
@@ -18,14 +18,14 @@ private struct ChildFixture: Decodable {
     let name: String
 }
 
-private enum JSONDecodingFlowError: Error {
+private enum JSONDecodingTestError: Error {
     case expectedFailure
 }
 
-enum PrimitivesFlowTesting {
-    static func runJSONDecodingDiagnostics() async throws
-        -> [TestFlowDiagnostic]
-    {
+enum PrimitivesTesting {
+    static func runJSONDecodingDiagnostics(
+        _ test: TestContext
+    ) async throws {
         let path = JSONCodingPath(
             [
                 .key("root"),
@@ -34,15 +34,17 @@ enum PrimitivesFlowTesting {
             ]
         )
 
-        try Expect.equal(
+        await test.expect(
             path.jsonPath,
-            "$.root[\"needs-escaping\"][2]",
+            equals: "$.root[\"needs-escaping\"][2]",
             "JSON coding path renders keys and indices"
         )
 
         let casing = try JSONCoding
             .casing(
-                decodeTo: .camel
+                decode: .init(
+                    to: .camel
+                )
             )
             .decode(
                 CasingFixture.self,
@@ -51,9 +53,9 @@ enum PrimitivesFlowTesting {
                 )
             )
 
-        try Expect.equal(
+        await test.expect(
             casing.someValue,
-            7,
+            equals: 7,
             "JSONCoding.decode uses its configured decoder"
         )
 
@@ -62,21 +64,21 @@ enum PrimitivesFlowTesting {
             json: #"{"root":{"children":[{}]}}"#
         )
 
-        try Expect.equal(
+        await test.expect(
             missing.kind,
-            .keyNotFound,
+            equals: .keyNotFound,
             "missing key classification"
         )
 
-        try Expect.equal(
+        await test.expect(
             missing.path.jsonPath,
-            "$.root.children[0].name",
+            equals: "$.root.children[0].name",
             "missing key includes the missing key in its path"
         )
 
-        try Expect.equal(
+        await test.expect(
             missing.key,
-            "name",
+            equals: "name",
             "missing key retains key identity"
         )
 
@@ -85,21 +87,21 @@ enum PrimitivesFlowTesting {
             json: #"{"root":{"children":[{"name":7}]}}"#
         )
 
-        try Expect.equal(
+        await test.expect(
             mismatch.kind,
-            .typeMismatch,
+            equals: .typeMismatch,
             "type mismatch classification"
         )
 
-        try Expect.equal(
+        await test.expect(
             mismatch.path.jsonPath,
-            "$.root.children[0].name",
+            equals: "$.root.children[0].name",
             "type mismatch retains its path"
         )
 
-        try Expect.equal(
+        await test.expect(
             mismatch.expectedType,
-            "String",
+            equals: "String",
             "type mismatch retains expected type"
         )
 
@@ -108,15 +110,15 @@ enum PrimitivesFlowTesting {
             json: #"{"name":null}"#
         )
 
-        try Expect.equal(
+        await test.expect(
             missingValue.kind,
-            .valueNotFound,
+            equals: .valueNotFound,
             "null nonoptional value classification"
         )
 
-        try Expect.equal(
+        await test.expect(
             missingValue.path.jsonPath,
-            "$.name",
+            equals: "$.name",
             "null nonoptional value retains its path"
         )
 
@@ -125,19 +127,19 @@ enum PrimitivesFlowTesting {
             json: #"{"value":99}"#
         )
 
-        try Expect.equal(
+        await test.expect(
             corrupted.kind,
-            .dataCorrupted,
+            equals: .dataCorrupted,
             "domain validation remains data corruption"
         )
 
-        try Expect.equal(
+        await test.expect(
             corrupted.path.jsonPath,
-            "$.value",
+            equals: "$.value",
             "domain validation retains its coding path"
         )
 
-        try Expect.true(
+        await test.expect(
             corrupted.reason.contains(
                 "Invalid day of month: 99"
             ),
@@ -149,32 +151,36 @@ enum PrimitivesFlowTesting {
             json: #"{"root":"#
         )
 
-        try Expect.equal(
+        await test.expect(
             malformed.kind,
-            .dataCorrupted,
+            equals: .dataCorrupted,
             "malformed JSON classification"
         )
 
-        try Expect.equal(
+        await test.expect(
             malformed.path.jsonPath,
-            "$",
+            equals: "$",
             "malformed JSON remains at root when no deeper path exists"
         )
 
-        return [
+        await test.record(
             .field(
                 "missing_key_path",
                 missing.path.jsonPath
-            ),
+            )
+        )
+        await test.record(
             .field(
                 "type_mismatch_path",
                 mismatch.path.jsonPath
-            ),
+            )
+        )
+        await test.record(
             .field(
                 "data_corruption_path",
                 corrupted.path.jsonPath
-            ),
-        ]
+            )
+        )
     }
 }
 
@@ -194,5 +200,5 @@ private func decodingError<Value: Decodable>(
         return error
     }
 
-    throw JSONDecodingFlowError.expectedFailure
+    throw JSONDecodingTestError.expectedFailure
 }

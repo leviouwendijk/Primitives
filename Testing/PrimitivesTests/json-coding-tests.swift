@@ -6,7 +6,7 @@ private struct JSONCodingFixture:
     Equatable,
     JSONCodingProviding
 {
-    static let jsonCoding = JSONCoding.casing(
+    static let jsoncoding = JSONCoding.casing(
         decoded: .camel,
         encoded: .snake
     )
@@ -64,7 +64,7 @@ func run_json_coding_tests() throws {
     let fixture = JSONCodingFixture(
         someValue: 7
     )
-    let coding = JSONCodingFixture.jsonCoding
+    let coding = JSONCodingFixture.jsoncoding
 
     let encodedValue = try JSONValue.encoding(
         fixture,

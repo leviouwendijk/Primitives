@@ -1,10 +1,10 @@
 import Primitives
-import TestFlows
+import Testing
 
-extension PrimitivesFlowTesting {
-    static func runJSONDiagnosticsCollection() async throws
-        -> [TestFlowDiagnostic]
-    {
+extension PrimitivesTesting {
+    static func runJSONDiagnosticsCollection(
+        _ test: TestContext
+    ) async {
         let diagnostics = JSONDiagnostics(
             [
                 JSONIssue(
@@ -48,73 +48,77 @@ extension PrimitivesFlowTesting {
             ]
         )
 
-        try Expect.false(
-            diagnostics.isEmpty,
+        await test.expect(
+            !diagnostics.isEmpty,
             "multiple JSON issues produce non-empty diagnostics"
         )
 
-        try Expect.equal(
+        await test.expect(
             diagnostics.issues.count,
-            3,
+            equals: 3,
             "JSON diagnostics retain every supplied issue"
         )
 
-        try Expect.equal(
+        await test.expect(
             diagnostics.issues[0].kind,
-            .missing,
+            equals: .missing,
             "first issue retains its kind"
         )
 
-        try Expect.equal(
+        await test.expect(
             diagnostics.issues[0].path.jsonPath,
-            "$.root.children[0].name",
+            equals: "$.root.children[0].name",
             "first issue retains its precise JSON path"
         )
 
-        try Expect.equal(
+        await test.expect(
             diagnostics.issues[1].kind,
-            .typeMismatch,
+            equals: .typeMismatch,
             "second issue remains independently classified"
         )
 
-        try Expect.equal(
+        await test.expect(
             diagnostics.issues[1].path.jsonPath,
-            "$.root.children[1].call",
+            equals: "$.root.children[1].call",
             "second issue retains its own JSON path"
         )
 
-        try Expect.equal(
+        await test.expect(
             diagnostics.issues[2].path.jsonPath,
-            "$.root.children[2].execution.workspace.subpath",
+            equals: "$.root.children[2].execution.workspace.subpath",
             "later issues remain visible rather than collapsing to the first failure"
         )
 
-        try Expect.equal(
+        await test.expect(
             diagnostics.issues[2].reason,
-            "Value is not valid in this context.",
+            equals: "Value is not valid in this context.",
             "issue reason remains caller-authored context"
         )
 
         let empty = JSONDiagnostics()
 
-        try Expect.true(
+        await test.expect(
             empty.isEmpty,
             "empty diagnostics are explicitly representable"
         )
 
-        return [
+        await test.record(
             .field(
                 "issues",
                 "\(diagnostics.issues.count)"
-            ),
+            )
+        )
+        await test.record(
             .field(
                 "first_path",
                 diagnostics.issues[0].path.jsonPath
-            ),
+            )
+        )
+        await test.record(
             .field(
                 "last_path",
                 diagnostics.issues[2].path.jsonPath
-            ),
-        ]
+            )
+        )
     }
 }

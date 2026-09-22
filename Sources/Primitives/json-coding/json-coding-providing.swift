@@ -1,19 +1,19 @@
 import Foundation
 
 public protocol JSONCodingProviding {
-    static var jsonCoding: JSONCoding { get }
+    static var jsoncoding: JSONCoding { get }
 }
 
 public extension JSONCodingProviding
 where Self: Encodable {
     func encode() throws -> Data {
-        try Self.jsonCoding.encode(
+        try Self.jsoncoding.encode(
             self
         )
     }
 
     func jsonValue() throws -> JSONValue {
-        try Self.jsonCoding.value(
+        try Self.jsoncoding.value(
             self
         )
     }
@@ -24,7 +24,7 @@ where Self: Decodable {
     static func decode(
         _ data: Data
     ) throws(JSONDecodingError) -> Self {
-        try jsonCoding.decode(
+        try jsoncoding.decode(
             Self.self,
             from: data
         )
@@ -33,7 +33,7 @@ where Self: Decodable {
     static func decode(
         _ value: JSONValue
     ) throws -> Self {
-        try jsonCoding.decode(
+        try jsoncoding.decode(
             Self.self,
             from: value
         )

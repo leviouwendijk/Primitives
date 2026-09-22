@@ -14,39 +14,30 @@ let package = Package(
             targets: ["Primitives"]
         ),
         .executable(
-            name: "treetest",
-            targets: ["PrimitivesTest"]
+            name: "primtest",
+            targets: ["PrimitivesTests"]
         ),
-        // .executable(
-        //     name: "primtest",
-        //     targets: ["PrimitivesTestFlows"]
-        // ),
     ],
-    // dependencies: [
-    //     .package(
-    //         url: "https://github.com/leviouwendijk/TestFlows.git",
-    //         branch: "master"
-    //     ),
-    // ],
+    dependencies: [
+        .package(
+            url: "https://github.com/leviouwendijk/Testing.git",
+            branch: "master"
+        ),
+    ],
     targets: [
         .target(
             name: "Primitives"
         ),
         .executableTarget(
-            name: "PrimitivesTest",
+            name: "PrimitivesTests",
             dependencies: [
                 "Primitives",
-            ]
+                .product(
+                    name: "Testing",
+                    package: "Testing"
+                ),
+            ],
+            path: "Testing/PrimitivesTests"
         ),
-        // .executableTarget(
-        //     name: "PrimitivesTestFlows",
-        //     dependencies: [
-        //         "Primitives",
-        //         .product(
-        //             name: "TestFlows",
-        //             package: "TestFlows"
-        //         ),
-        //     ]
-        // ),
     ]
 )
