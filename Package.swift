@@ -17,6 +17,10 @@ let package = Package(
             name: "primtest",
             targets: ["PrimitivesTests"]
         ),
+        .executable(
+            name: "pricasetest",
+            targets: ["PrimitivesCasingTests"]
+        ),
     ],
     dependencies: [
         .package(
@@ -38,6 +42,11 @@ let package = Package(
                 ),
             ],
             path: "Testing/PrimitivesTests"
+        ),
+        .executableTarget(
+            name: "PrimitivesCasingTests",
+            dependencies: ["Primitives"],
+            path: "Testing/PrimitivesCasingTests"
         ),
     ]
 )

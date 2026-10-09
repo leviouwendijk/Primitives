@@ -19,16 +19,14 @@ public struct CasedProperty:
 
         /// Allows Swift reserved keywords by emitting them as escaped
         /// identifiers, for example `private`.
-        public static let reservedKeywords =
-            Self(rawValue: 1 << 0)
+        public static let reservedKeywords = Self(rawValue: 1 << 0)
 
         /// Allows Swift raw identifiers when the rendered property cannot
         /// be represented as an ordinary identifier.
         ///
         /// This also permits reserved keywords, since they can be represented
         /// using the same backtick-delimited source syntax.
-        public static let rawIdentifiers =
-            Self(rawValue: 1 << 1)
+        public static let rawIdentifiers = Self(rawValue: 1 << 1)
 
         /// Accepts any rendered property that Swift can represent as either
         /// an ordinary, escaped, or raw identifier.
