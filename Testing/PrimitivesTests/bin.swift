@@ -42,6 +42,16 @@ enum PrimitivesTestSuite {
         }
 
         Test(
+            "json-value-native",
+            tags: [
+                "json",
+                "native",
+            ]
+        ) {
+            try run_json_value_native_tests()
+        }
+
+        Test(
             "tree",
             tags: [
                 "tree",

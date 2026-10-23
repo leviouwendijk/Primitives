@@ -1,3 +1,5 @@
+import Foundation
+
 extension JSONValue {
     public struct ValueAccessorAPI: Sendable, Codable {
         public let jsonvalue: JSONValue 
@@ -22,6 +24,10 @@ extension JSONValue {
 
         public var bool: Bool? {
             try? self.jsonvalue.boolValue
+        }
+
+        public var uuid: UUID? {
+            try? self.jsonvalue.uuidValue
         }
 
         public var object: [String: JSONValue]? {

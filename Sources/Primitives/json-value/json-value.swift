@@ -18,8 +18,8 @@ public enum JSONValue: Codable, Sendable, Hashable, Equatable {
         } else if let i = try? container.decode(Int.self) {
             self = .int(i)
         } else if let d = try? container.decode(Double.self) {
-            if d == Double(Int(d)) {
-                self = .int(Int(d))
+            if let integer = Int(exactly: d) {
+                self = .int(integer)
             } else {
                 self = .double(d)
             }
@@ -116,7 +116,12 @@ public enum JSONValue: Codable, Sendable, Hashable, Equatable {
                 )
 
             case .double(let d):
-                return Int(d)
+                guard let integer = Int(exactly: d) else {
+                    throw JSONValueError.invalidCast(
+                        description: "Cannot convert Double \(d) to Int without loss"
+                    )
+                }
+                return integer
 
             case .bool(let b):
                 return b ? 1 : 0
