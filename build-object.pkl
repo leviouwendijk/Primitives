@@ -1,0 +1,20 @@
+uuid = "1D096F39-F17E-4C38-A193-04B8A3A5079A"
+name = "Primitives"
+types { "library" }
+versions {
+    release {
+        major = 0
+        minor = 1
+        patch = 0
+    }
+}
+compile {
+    use = false
+    arguments { }
+}
+tests {
+    primary = "t_primitives"
+}
+details = ""
+author = "levi"
+update = "https://raw.githubusercontent.com/leviouwendijk/Primitives/master/build-object.pkl"

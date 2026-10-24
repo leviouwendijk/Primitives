@@ -61,6 +61,15 @@ enum PrimitivesTestSuite {
         }
 
         Test(
+            "graph",
+            tags: [
+                "graph",
+            ]
+        ) {
+            try run_graph_tests()
+        }
+
+        Test(
             "json-decoding-diagnostics",
             tags: [
                 "json",

@@ -14,11 +14,11 @@ let package = Package(
             targets: ["Primitives"]
         ),
         .executable(
-            name: "primtest",
+            name: "t_primitives",
             targets: ["PrimitivesTests"]
         ),
         .executable(
-            name: "pricasetest",
+            name: "t_p_case",
             targets: ["PrimitivesCasingTests"]
         ),
     ],
