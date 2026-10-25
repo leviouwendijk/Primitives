@@ -116,5 +116,69 @@ enum PrimitivesTestSuite {
         Test("invariant-composition", tags: ["invariant"]) {
             try test_invariant_composition()
         }
+
+        Test("invariance-rule-core", tags: ["invariant", "invariance"]) {
+            try test_invariance_rule_core()
+        }
+
+        Test("invariance-length-catalog", tags: ["invariant", "invariance"]) {
+            try test_invariance_length_catalog()
+        }
+
+        Test("invariance-range-catalog", tags: ["invariant", "invariance"]) {
+            try test_invariance_range_catalog()
+        }
+
+        Test("invariance-collection-catalog", tags: ["invariant", "invariance"]) {
+            try test_invariance_collection_catalog()
+        }
+
+        Test("invariance-required-construction", tags: ["invariant", "invariance"]) {
+            try test_invariance_required_and_construction()
+        }
+
+        Test("invariance-refinement-field-projection", tags: ["invariant", "invariance"]) {
+            try test_invariance_field_projection()
+        }
+
+        Test("invariance-refinement-unordered-ranges", tags: ["invariant", "invariance"]) {
+            try test_invariance_unordered_ranges()
+        }
+
+        Test("invariance-refinement-text-finite", tags: ["invariant", "invariance"]) {
+            try test_invariance_text_and_finite()
+        }
+
+        Test("invariance-refinement-collection-count", tags: ["invariant", "invariance"]) {
+            try test_invariance_collection_count()
+        }
+
+        Test("invariance-expansion-decimal", tags: ["invariant", "invariance"]) {
+            try test_invariance_expansion_decimal()
+        }
+
+        Test("invariance-expansion-sign", tags: ["invariant", "invariance"]) {
+            try test_invariance_expansion_sign()
+        }
+
+        Test("invariance-expansion-collections", tags: ["invariant", "invariance"]) {
+            try test_invariance_expansion_collections()
+        }
+
+        Test("invariance-expansion-values", tags: ["invariant", "invariance"]) {
+            try test_invariance_expansion_values()
+        }
+
+        Test("invariance-expansion-fields-and-sum", tags: ["invariant", "invariance"]) {
+            try test_invariance_expansion_fields_and_sum()
+        }
+
+        Test("invariance-expansion-patterns-and-dates", tags: ["invariant", "invariance"]) {
+            try test_invariance_expansion_patterns_dates()
+        }
+
+        Test("invariance-expansion-reconstruction", tags: ["invariant", "invariance"]) {
+            try test_invariance_expansion_reconstruction()
+        }
     }
 }
