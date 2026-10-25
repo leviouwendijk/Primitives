@@ -96,5 +96,25 @@ enum PrimitivesTestSuite {
                     test
                 )
         }
+
+        Test("invariant-nonthrowing", tags: ["invariant"]) {
+            try test_invariant_nonthrowing()
+        }
+
+        Test("invariant-shared-error", tags: ["invariant"]) {
+            try test_invariant_shared_error()
+        }
+
+        Test("invariant-nested-error", tags: ["invariant"]) {
+            try test_invariant_nested_error()
+        }
+
+        Test("invariant-unrestricted-errors", tags: ["invariant"]) {
+            try test_invariant_unrestricted_errors()
+        }
+
+        Test("invariant-composition", tags: ["invariant"]) {
+            try test_invariant_composition()
+        }
     }
 }
