@@ -1,0 +1,47 @@
+import Foundation
+import Primitives
+
+func test_date_completion_context() throws {
+    let timezone = TimeZone(secondsFromGMT: 0)!
+    let leap = try DateCompletionContext(year: 2024, month: 2, timezone: timezone)
+    let source = try PartialDate(year: 2024, month: 2)
+    let copied = try DateCompletionContext(source, timezone: timezone)
+    try expect(copied.year == 2024 && copied.month == 2, "date completion context accepts validated PartialDate")
+
+    let inferred = DateSpecification(infer: try DayOfMonth(29))
+    let date = try inferred.resolve(using: leap)
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = timezone
+    let parts = calendar.dateComponents([.year, .month, .day], from: date)
+    try expect(parts.year == 2024 && parts.month == 2 && parts.day == 29, "leap-day inference preserves calendar date")
+
+    let absolute = Date(timeIntervalSince1970: 1_700_000_000)
+    try expect(try DateSpecification(absolute: absolute).resolve(using: leap) == absolute, "absolute dates are independent of completion context")
+
+    do {
+        _ = try DateCompletionContext(year: 2024, month: 13, timezone: timezone)
+        try expect(false, "context rejects invalid month")
+    } catch DateSpecificationError.invalidPartialDate {}
+
+    do {
+        _ = try DateCompletionContext(PartialDate(year: 2024), timezone: timezone)
+        try expect(false, "context rejects missing month")
+    } catch DateSpecificationError.invalidCompletionContext {}
+
+    do {
+        let complete = try PartialDate(year: 2024, month: 2, day: 15)
+        _ = try DateCompletionContext(complete, timezone: timezone)
+        try expect(false, "a fully specified date is not a year/month completion context")
+    } catch DateSpecificationError.invalidCompletionContext {}
+
+    do {
+        let nonLeap = try DateCompletionContext(year: 2025, month: 2, timezone: timezone)
+        _ = try inferred.resolve(using: nonLeap)
+        try expect(false, "non-leap February 29 must fail")
+    } catch DateSpecificationError.invalidPartialDate {}
+
+    do {
+        _ = try DateSpecification(infer: try DayOfMonth(31)).resolve(using: leap)
+        try expect(false, "February 31 must fail without normalizing into March")
+    } catch DateSpecificationError.invalidPartialDate {}
+}

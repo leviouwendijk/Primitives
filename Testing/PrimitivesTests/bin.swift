@@ -189,6 +189,10 @@ enum PrimitivesTestSuite {
             try test_codable_invariant_coding()
         }
 
+        Test("date-completion-context", tags: ["date", "invariant"]) {
+            try test_date_completion_context()
+        }
+
         Test("invariance-construction-bridge", tags: ["invariant", "invariance"]) {
             try test_invariance_construction_bridge()
         }

@@ -268,52 +268,42 @@ public struct PartialDate:
     }
 
     public func resolve(
-        in timeZone: TimeZone
+        in timezone: TimeZone
     ) throws(DateSpecificationError) -> Date {
-        let (
-            year,
-            month,
-            day
-        ) =
-            try requireComplete()
+        let (year, month, day) = try requireComplete()
 
-        var components =
-            DateComponents()
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timezone
 
-        components.calendar =
-            Calendar(
-                identifier: .gregorian
-            )
+        let components = DateComponents(
+            calendar: calendar,
+            timeZone: timezone,
+            year: year,
+            month: month,
+            day: day,
+            hour: 0,
+            minute: 0,
+            second: 0
+        )
 
-        components.timeZone =
-            timeZone
-
-        components.year =
-            year
-
-        components.month =
-            month
-
-        components.day =
-            day
-
-        components.hour = 0
-        components.minute = 0
-        components.second = 0
-
-        guard
-            let date =
-                components.date
-        else {
+        guard let date = calendar.date(from: components) else {
             throw .invalidDateComponents(
                 year: year,
                 month: month,
                 day: day,
-                timeZoneIdentifier:
-                    timeZone.identifier
+                timezoneIdentifier: timezone.identifier
             )
         }
 
+        let actual = calendar.dateComponents([.year, .month, .day], from: date)
+        guard actual.year == year, actual.month == month, actual.day == day else {
+            throw .invalidDateComponents(
+                year: year,
+                month: month,
+                day: day,
+                timezoneIdentifier: timezone.identifier
+            )
+        }
         return date
     }
 

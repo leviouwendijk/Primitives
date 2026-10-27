@@ -250,11 +250,16 @@ public enum DateSpecificationError:
         month: Int?,
         day: Int?
     )
+    case invalidCompletionContext(
+        year: Int?,
+        month: Int?,
+        day: Int?
+    )
     case invalidDateComponents(
         year: Int,
         month: Int,
         day: Int,
-        timeZoneIdentifier: String
+        timezoneIdentifier: String
     )
 
     public var errorDescription: String? {
@@ -281,13 +286,15 @@ public enum DateSpecificationError:
         ):
             return "Invalid partial date year=\(year) month=\(String(describing: month)) day=\(String(describing: day))"
 
+        case .invalidCompletionContext(let year, let month, let day):
+            return "Date completion requires year and month, without a day; got year=\(String(describing: year)) month=\(String(describing: month)) day=\(String(describing: day))"
         case .invalidDateComponents(
             let year,
             let month,
             let day,
-            let timeZoneIdentifier
+            let timezoneIdentifier
         ):
-            return "Invalid date components year=\(year) month=\(month) day=\(day) timeZone=\(timeZoneIdentifier)"
+            return "Invalid date components year=\(year) month=\(month) day=\(day) timezone=\(timezoneIdentifier)"
         }
     }
 }
