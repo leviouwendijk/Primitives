@@ -8,7 +8,7 @@ public struct TreeTraversalLimits:
 
     public init(
         maximum_depth: Int? = nil
-    ) throws {
+    ) throws(TreeTraversalLimitError) {
         if let maximum_depth,
            maximum_depth < 0 {
             throw TreeTraversalLimitError.negative_maximum_depth(

@@ -180,5 +180,17 @@ enum PrimitivesTestSuite {
         Test("invariance-expansion-reconstruction", tags: ["invariant", "invariance"]) {
             try test_invariance_expansion_reconstruction()
         }
+
+        Test("invariant-primitive-conformances", tags: ["invariant"]) {
+            try test_invariant_primitive_conformances()
+        }
+
+        Test("invariant-codable-coding", tags: ["invariant", "json"]) {
+            try test_codable_invariant_coding()
+        }
+
+        Test("invariance-construction-bridge", tags: ["invariant", "invariance"]) {
+            try test_invariance_construction_bridge()
+        }
     }
 }

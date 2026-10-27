@@ -6,7 +6,7 @@ public struct NonBlankString:
     Equatable,
     Hashable
 {
-    public private(set) var rawValue: String
+    public let rawValue: String
 
     private enum CodingKeys:
         String,

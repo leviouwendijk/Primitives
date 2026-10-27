@@ -35,7 +35,7 @@ public struct Graph<NodeID: Hashable, NodeValue, EdgeID: Hashable, EdgeValue> {
 
     /// Parse-on-construction: a Graph always has unique identities and
     /// endpoints that refer to its own nodes.
-    public init(nodes: [Node], edges: [Edge]) throws {
+    public init(nodes: [Node], edges: [Edge]) throws(GraphValidationError<NodeID, EdgeID>) {
         var node_ids: Set<NodeID> = []
         for node in nodes {
             guard node_ids.insert(node.id).inserted else {

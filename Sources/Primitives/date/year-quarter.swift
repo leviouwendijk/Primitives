@@ -9,14 +9,6 @@ public struct YearQuarter:
     public let year: Int
     public let quarter: Int
 
-    private enum CodingKeys:
-        String,
-        CodingKey
-    {
-        case year
-        case quarter
-    }
-
     public init(
         year: Int,
         quarter: Int
@@ -87,61 +79,6 @@ public struct YearQuarter:
 
         self.quarter =
             ((month - 1) / 3) + 1
-    }
-
-    public init(
-        from decoder: Decoder
-    ) throws {
-        let container =
-            try decoder.container(
-                keyedBy: CodingKeys.self
-            )
-
-        let year =
-            try container.decode(
-                Int.self,
-                forKey: .year
-            )
-
-        let quarter =
-            try container.decode(
-                Int.self,
-                forKey: .quarter
-            )
-
-        do {
-            try self.init(
-                year: year,
-                quarter: quarter
-            )
-        } catch {
-            throw DecodingError
-                .dataCorruptedError(
-                    forKey: .quarter,
-                    in: container,
-                    debugDescription:
-                        "Invalid quarter: \(quarter)"
-                )
-        }
-    }
-
-    public func encode(
-        to encoder: Encoder
-    ) throws {
-        var container =
-            encoder.container(
-                keyedBy: CodingKeys.self
-            )
-
-        try container.encode(
-            year,
-            forKey: .year
-        )
-
-        try container.encode(
-            quarter,
-            forKey: .quarter
-        )
     }
 
     public var label: String {

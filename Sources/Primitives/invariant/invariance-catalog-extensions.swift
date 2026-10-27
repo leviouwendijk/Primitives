@@ -17,8 +17,21 @@ public struct InvarianceSignViolation<Number: Sendable>: InvarianceReason {
         self.requirement = requirement
     }
 
-    public var code: InvarianceCode { .custom("number.sign") }
-    public var message: String { "Value does not satisfy the required numeric sign." }
+    public var code: InvarianceCode {
+        switch requirement {
+        case .positive: .custom("number.positive")
+        case .nonnegative: .custom("number.nonnegative")
+        case .nonzero: .custom("number.nonzero")
+        }
+    }
+
+    public var message: String {
+        switch requirement {
+        case .positive: "Value must be positive."
+        case .nonnegative: "Value must not be negative."
+        case .nonzero: "Value must not be zero."
+        }
+    }
 }
 
 public struct InvarianceNumberRules<Number: Comparable & AdditiveArithmetic & Sendable>: Sendable {
@@ -259,6 +272,7 @@ public struct InvarianceUnexpectedValue<Value: Sendable>: InvarianceReason {
     }
 
     public var code: InvarianceCode { .custom("value.not_equal") }
+    public var message: String { "Value does not equal the expected value." }
 }
 
 public struct InvarianceValueNotAllowed<Value: Hashable & Sendable>: InvarianceReason {
@@ -271,6 +285,7 @@ public struct InvarianceValueNotAllowed<Value: Hashable & Sendable>: InvarianceR
     }
 
     public var code: InvarianceCode { .custom("value.not_allowed") }
+    public var message: String { "Value is not one of the allowed values." }
 }
 
 public struct InvarianceValueRules<Value: Equatable & Sendable>: Sendable {
@@ -323,6 +338,7 @@ public struct InvarianceFieldsUnequal<Field: Equatable & Sendable>: InvarianceRe
     }
 
     public var code: InvarianceCode { .custom("fields.not_equal") }
+    public var message: String { "Field '\(left_name)' must equal field '\(right_name)'." }
 }
 
 public struct InvarianceFieldsRules<Root>: Sendable {
@@ -361,6 +377,7 @@ public struct InvarianceMissingElement<Element: Hashable & Sendable>: Invariance
     public let required: Element
     public init(required: Element) { self.required = required }
     public var code: InvarianceCode { .custom("elements.missing") }
+    public var message: String { "Collection is missing a required element." }
 }
 
 public struct InvarianceDisallowedElement<Element: Hashable & Sendable>: InvarianceReason {
@@ -371,6 +388,7 @@ public struct InvarianceDisallowedElement<Element: Hashable & Sendable>: Invaria
         self.allowed = allowed
     }
     public var code: InvarianceCode { .custom("elements.disallowed") }
+    public var message: String { "Collection contains an element outside the allowed set." }
 }
 
 public extension InvarianceElementsRules {
@@ -425,6 +443,7 @@ public struct InvarianceSumMismatch: InvarianceReason {
         self.actual = actual
     }
     public var code: InvarianceCode { .custom("sum.mismatch") }
+    public var message: String { "Sum \(actual) does not equal expected \(expected)." }
 }
 
 public struct InvarianceSumRules<Value: Collection & Sendable>: Sendable
@@ -464,23 +483,21 @@ public struct InvariancePatternMismatch: InvarianceReason {
         self.actual = actual
     }
     public var code: InvarianceCode { .custom("text.pattern_mismatch") }
+    public var message: String { "Text does not match pattern \(pattern)." }
 }
 
 public extension InvarianceTextRules {
+    /// Adheres when any substring matches `pattern`. Anchor the pattern
+    /// (`^...$`) to require a whole-string match. The pattern is compiled
+    /// once at rule construction and shared across evaluations.
     func matches(
         _ pattern: String
     ) throws -> InvarianceRule<String> {
-        _ = try NSRegularExpression(pattern: pattern)
+        let box = try InvarianceRegexBox(
+            regex: NSRegularExpression(pattern: pattern)
+        )
         return InvarianceRule { value in
-            // The pattern was checked during construction; recompile to avoid
-            // sharing potentially non-Sendable Foundation regex state.
-            guard let regex = try? NSRegularExpression(pattern: pattern) else {
-                return [
-                    InvarianceViolation(
-                        InvariancePatternMismatch(pattern: pattern, actual: value)
-                    )
-                ]
-            }
+            let regex = box.regex
             let range = NSRange(value.startIndex..<value.endIndex, in: value)
             return regex.firstMatch(in: value, range: range) == nil ? [
                 InvarianceViolation(
@@ -498,4 +515,10 @@ public struct InvarianceDateRules: Sendable {
 
 public extension InvarianceRule where Value == Date {
     static var date: InvarianceDateRules { .init() }
+}
+
+/// NSRegularExpression is documented as immutable and thread-safe; the box
+/// lets one compiled pattern be shared by Sendable rule closures.
+private struct InvarianceRegexBox: @unchecked Sendable {
+    let regex: NSRegularExpression
 }

@@ -11,7 +11,7 @@ public struct TreeAddress:
     public init(
         root: Int,
         descendants: [Int] = []
-    ) throws {
+    ) throws(TreeAddress.Error) {
         guard root >= 0 else {
             throw Error.negative_root(
                 root
