@@ -1,22 +1,10 @@
-/// Evidence that a raw value cannot construct an invariant-bearing type.
-public struct InvarianceConstructionFailed<Target: Invariant>: InvarianceReason
-where Target.Error: Sendable {
-    public let error: Target.Error
-
-    public init(
-        error: Target.Error
-    ) {
-        self.error = error
-    }
-
-    public var code: InvarianceCode { .custom("construction.failed") }
-    public var message: String { "Value cannot construct \(Target.self): \(error)" }
-}
-
 public extension InvarianceRule {
     /// Adheres when the value constructs `Target`, reusing that type's own
     /// guarantee instead of restating it as rules.
-    static func constructs<Target: Invariant>(
+    ///
+    /// `Target` must have a sendable metatype because the rule's `@Sendable`
+    /// closure constructs through it.
+    static func constructs<Target: Invariant & SendableMetatype>(
         _ target: Target.Type
     ) -> Self where Target.Raw == Value, Target.Error: Sendable {
         Self { value in
