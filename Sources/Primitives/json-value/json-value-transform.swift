@@ -15,4 +15,3 @@ public struct JSONValueTransform {
         self.extras = extras
     }
 }
-
