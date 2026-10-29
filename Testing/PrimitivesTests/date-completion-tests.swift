@@ -17,6 +17,52 @@ func test_date_completion_context() throws {
 
     let absolute = Date(timeIntervalSince1970: 1_700_000_000)
     try expect(try DateSpecification(absolute: absolute).resolve(using: leap) == absolute, "absolute dates are independent of completion context")
+    let encoder = JSONEncoder()
+    let decoder = JSONDecoder()
+    let flatInfer = try encoder.encode(inferred)
+    try expect(
+        String(decoding: flatInfer, as: UTF8.self) == #"{"infer":29}"#,
+        "inferred date has the canonical flat encoding"
+    )
+    try expect(
+        try decoder.decode(DateSpecification.self, from: flatInfer) == inferred,
+        "flat inferred date decodes"
+    )
+    try expect(
+        try decoder.decode(
+            DateSpecification.self,
+            from: Data(#"{"infer":{"day":29}}"#.utf8)
+        ) == inferred,
+        "legacy nested inferred date decodes"
+    )
+    let iso = ISO8601DateFormatter().string(from: absolute)
+    let flatAbsolute = try encoder.encode(DateSpecification(absolute: absolute))
+    try expect(
+        String(decoding: flatAbsolute, as: UTF8.self) == "{\"absolute\":\"\(iso)\"}",
+        "absolute date has canonical ISO8601 string encoding"
+    )
+    try expect(
+        try decoder.decode(DateSpecification.self, from: flatAbsolute) == .absolute(absolute),
+        "flat absolute date decodes"
+    )
+    let nestedISO = Data("{\"absolute\":{\"_0\":\"\(iso)\"}}".utf8)
+    try expect(
+        try decoder.decode(DateSpecification.self, from: nestedISO) == .absolute(absolute),
+        "legacy nested Accounting ISO date decodes"
+    )
+    let nestedNumeric = Data("{\"absolute\":{\"_0\":\(absolute.timeIntervalSinceReferenceDate)}}".utf8)
+    try expect(
+        try decoder.decode(DateSpecification.self, from: nestedNumeric) == .absolute(absolute),
+        "legacy synthesized numeric date decodes"
+    )
+    for json in [#"{"infer":0}"#, #"{"infer":{"day":32}}"#] {
+        do {
+            _ = try decoder.decode(DateSpecification.self, from: Data(json.utf8))
+            try expect(false, "invalid inferred day must fail decoding")
+        } catch DecodingError.dataCorrupted {
+            // Correct: DayOfMonth is still the invariant boundary.
+        }
+    }
 
     do {
         _ = try DateCompletionContext(year: 2024, month: 13, timezone: timezone)

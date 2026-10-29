@@ -117,119 +117,81 @@ public enum DateSpecification:
         }
     }
 
-    public func encode(
-        to encoder: Encoder
-    ) throws {
-        var container =
-            encoder.container(
-                keyedBy: CodingKeys.self
-            )
-
+    /// Canonical wire format: {"absolute":"ISO8601"} or {"infer":29}.
+    /// Decoding also accepts the older nested enum representations.
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
-        case .absolute(
-            let date
-        ):
-            var nested =
-                container.nestedContainer(
-                    keyedBy:
-                        AbsoluteCodingKeys.self,
-                    forKey: .absolute
-                )
-
-            try nested.encode(
-                date,
-                forKey: ._0
+        case .absolute(let date):
+            try container.encode(
+                ISO8601DateFormatter().string(from: date),
+                forKey: .absolute
             )
-
-        case .infer(
-            let day
-        ):
-            var nested =
-                container.nestedContainer(
-                    keyedBy:
-                        InferCodingKeys.self,
-                    forKey: .infer
-                )
-
-            try nested.encode(
-                day.value,
-                forKey: .day
-            )
+        case .infer(let day):
+            try container.encode(day.value, forKey: .infer)
         }
     }
 
-    public init(
-        from decoder: Decoder
-    ) throws {
-        let container =
-            try decoder.container(
-                keyedBy: CodingKeys.self
-            )
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        if container.contains(
-            .absolute
-        ) {
-            let nested =
-                try container.nestedContainer(
-                    keyedBy:
-                        AbsoluteCodingKeys.self,
-                    forKey: .absolute
-                )
+        if container.contains(.absolute) {
+            let formatter = ISO8601DateFormatter()
 
-            self = .absolute(
-                try nested.decode(
-                    Date.self,
-                    forKey: ._0
-                )
-            )
-
-            return
-        }
-
-        if container.contains(
-            .infer
-        ) {
-            let nested =
-                try container.nestedContainer(
-                    keyedBy:
-                        InferCodingKeys.self,
-                    forKey: .infer
-                )
-
-            let value =
-                try nested.decode(
-                    Int.self,
-                    forKey: .day
-                )
-
-            do {
-                self = .infer(
-                    day: try DayOfMonth(
-                        value
-                    )
-                )
-            } catch {
-                throw DecodingError
-                    .dataCorruptedError(
-                        forKey: .day,
-                        in: nested,
-                        debugDescription:
-                            "Invalid day of month: \(value)"
-                    )
+            if let text = try? container.decode(String.self, forKey: .absolute),
+               let date = formatter.date(from: text) {
+                self = .absolute(date)
+                return
             }
 
+            // Old synthesized enum encoding (including user-configured
+            // JSONDecoder date strategies), and Accounting's nested ISO form.
+            let nested = try container.nestedContainer(
+                keyedBy: AbsoluteCodingKeys.self, forKey: .absolute
+            )
+            if let date = try? nested.decode(Date.self, forKey: ._0) {
+                self = .absolute(date)
+                return
+            }
+            if let text = try? nested.decode(String.self, forKey: ._0),
+               let date = formatter.date(from: text) {
+                self = .absolute(date)
+                return
+            }
+            throw DecodingError.dataCorruptedError(
+                forKey: .absolute, in: container,
+                debugDescription: "Invalid absolute date"
+            )
+        }
+
+        if container.contains(.infer) {
+            let day: Int
+            if let flat = try? container.decode(Int.self, forKey: .infer) {
+                day = flat
+            } else {
+                let nested = try container.nestedContainer(
+                    keyedBy: InferCodingKeys.self, forKey: .infer
+                )
+                day = try nested.decode(Int.self, forKey: .day)
+            }
+
+            do {
+                self = .infer(day: try DayOfMonth(day))
+            } catch {
+                throw DecodingError.dataCorruptedError(
+                    forKey: .infer, in: container,
+                    debugDescription: "Invalid day of month: \(day)"
+                )
+            }
             return
         }
 
         throw DecodingError.dataCorrupted(
-            .init(
-                codingPath:
-                    decoder.codingPath,
-                debugDescription:
-                    "Invalid DateSpecification"
-            )
+            .init(codingPath: decoder.codingPath,
+                  debugDescription: "Invalid DateSpecification")
         )
     }
+
 }
 
 public enum DateSpecificationError:
