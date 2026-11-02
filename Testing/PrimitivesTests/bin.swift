@@ -69,6 +69,22 @@ enum PrimitivesTestSuite {
             try run_graph_tests()
         }
 
+        Test("graph-topology", tags: ["graph"]) {
+            try run_graph_topology_tests()
+        }
+
+        Test("graph-selection", tags: ["graph"]) {
+            try run_graph_selection_tests()
+        }
+
+        Test("graph-references", tags: ["graph"]) {
+            try run_reference_set_tests()
+        }
+
+        Test("graph-layout", tags: ["graph", "layout"]) {
+            try run_graph_layout_tests()
+        }
+
         Test(
             "json-decoding-diagnostics",
             tags: [
