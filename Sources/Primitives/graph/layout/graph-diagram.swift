@@ -78,7 +78,10 @@ public struct GraphDiagram<NodeID: Hashable, EdgeID: Hashable> {
                 maximumLane = max(maximumLane, point.lane)
             }
             for (a, b) in zip(edge.points, edge.points.dropFirst()) {
-                guard (a.row == b.row) != (a.lane == b.lane) else {
+                // Distinct spatial points form a straight segment. Both
+                // orthogonal and diagonal segments are valid; rasterization
+                // is the responsibility of the presentation layer.
+                guard a != b else {
                     throw .invalid_route(edge.id)
                 }
             }
@@ -104,6 +107,7 @@ public enum GraphDiagramError<NodeID: Hashable, EdgeID: Hashable>: Error {
     case occupied_position(NodeID)
     case missing_position(NodeID)
     case unmatched_positions
+    case unmatched_routes
     case duplicate_edge(EdgeID)
     case unknown_edge_endpoint(EdgeID)
     case invalid_route(EdgeID)

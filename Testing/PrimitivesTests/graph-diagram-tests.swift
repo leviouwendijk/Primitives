@@ -69,6 +69,49 @@ func run_graph_diagram_tests() throws {
     ).diagram(positions: ["S": .init(row: 0, lane: 0)])
     try expect(selfLoop.route(of: "self")?.points.count == 5, "self-loop retained")
 
+    // Explicit routes may be diagonal and must retain their edge identity.
+    let explicit = try graph.diagram(
+        positions: locations,
+        routes: [
+            "x1": [
+                .init(row: 1, lane: 0),
+                .init(row: 2, lane: 2)
+            ]
+        ]
+    )
+    try expect(explicit.edges.count == links.count, "explicit routes preserve all edges")
+    try expect(
+        explicit.route(of: "x1")?.points == [
+            .init(row: 1, lane: 0),
+            .init(row: 2, lane: 2)
+        ],
+        "diagonal route is retained"
+    )
+    try expect(
+        explicit.route(of: "vP1")?.points == diagram.route(of: "vP1")?.points,
+        "unspecified routes remain unchanged"
+    )
+    try expect(
+        try JSONDecoder().decode(D.self, from: JSONEncoder().encode(explicit)) == explicit,
+        "diagonal route survives serialization"
+    )
+
+    do {
+        _ = try graph.diagram(
+            positions: locations,
+            routes: ["unknown": [.init(row: 0, lane: 0), .init(row: 1, lane: 1)]]
+        )
+        throw GraphDiagramExpectedError.missing_error
+    } catch GraphDiagramError<String, String>.unmatched_routes {}
+
+    do {
+        _ = try graph.diagram(
+            positions: locations,
+            routes: ["x1": [.init(row: 1, lane: 0), .init(row: 1, lane: 0)]]
+        )
+        throw GraphDiagramExpectedError.missing_error
+    } catch GraphDiagramError<String, String>.invalid_route("x1") {}
+
     let malformed = Data(#"{"nodes":[{"id":"A","position":{"row":-1,"lane":0}}],"edges":[]}"#.utf8)
     do {
         _ = try JSONDecoder().decode(D.self, from: malformed)
