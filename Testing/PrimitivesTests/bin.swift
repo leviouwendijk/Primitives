@@ -85,6 +85,10 @@ enum PrimitivesTestSuite {
             try run_graph_layout_tests()
         }
 
+        Test("graph-diagram", tags: ["graph", "layout", "diagram"]) {
+            try run_graph_diagram_tests()
+        }
+
         Test(
             "json-decoding-diagnostics",
             tags: [
