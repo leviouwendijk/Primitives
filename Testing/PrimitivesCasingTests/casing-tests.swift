@@ -33,6 +33,24 @@ public enum PrimitivesCasingTests {
         expect(Case.substitute("foo", matching: "", with: "bar"), "foo", name: "empty pattern")
         expect(Case.substitute("foo", matching: "none", with: "bar"), "foo", name: "no match")
         expect(Case.substitute("foofoo", matching: "foo", with: "bar"), "barbar", name: "adjacent matches")
+        let segmentedSource = "URLSession42_timeout-École"
+        let segmented = Case.segments(segmentedSource)
+        let sourceBytes = Array(segmentedSource.utf8)
+        var position = 0
+        for part in segmented {
+            guard part.utf8.lowerBound == position,
+                  String(decoding: sourceBytes[part.utf8], as: UTF8.self) == part.text else {
+                fatalError("case segment offset mismatch")
+            }
+            position = part.utf8.upperBound
+        }
+        guard position == sourceBytes.count,
+              segmented.map(\.text).joined() == segmentedSource,
+              segmented.filter({ $0.kind == .component }).map(\.text)
+                  == Case.components(segmentedSource),
+              Case.components("URLSession42_timeout") == ["URL", "Session", "42", "timeout"] else {
+            fatalError("case segment reconstruction mismatch")
+        }
         print("Primitives casing tests passed")
     }
 }
