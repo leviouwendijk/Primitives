@@ -13,40 +13,12 @@ let package = Package(
             name: "Primitives",
             targets: ["Primitives"]
         ),
-        .executable(
-            name: "t_primitives",
-            targets: ["PrimitivesTests"]
-        ),
-        .executable(
-            name: "t_p_case",
-            targets: ["PrimitivesCasingTests"]
-        ),
     ],
     dependencies: [
-        .package(
-            url: "https://github.com/leviouwendijk/Testing.git",
-            branch: "master"
-        ),
     ],
     targets: [
         .target(
             name: "Primitives"
-        ),
-        .executableTarget(
-            name: "PrimitivesTests",
-            dependencies: [
-                "Primitives",
-                .product(
-                    name: "Testing",
-                    package: "Testing"
-                ),
-            ],
-            path: "Testing/PrimitivesTests"
-        ),
-        .executableTarget(
-            name: "PrimitivesCasingTests",
-            dependencies: ["Primitives"],
-            path: "Testing/PrimitivesCasingTests"
         ),
     ]
 )
