@@ -44,4 +44,44 @@ func run_text_sink_tests() throws {
 
     concurrent.clear()
     try expect(concurrent.isEmpty && concurrent.dropped == 0, "clear empties the buffer")
+
+    try run_text_buffer_time_tests()
+}
+
+/// A clock the test moves by hand.
+private final class ManualClock: @unchecked Sendable {
+    var now = Date(timeIntervalSince1970: 1_000)
+
+    func advance(_ seconds: TimeInterval) {
+        now = now.addingTimeInterval(seconds)
+    }
+}
+
+private func run_text_buffer_time_tests() throws {
+    let clock = ManualClock()
+    let buffer = TextBuffer(now: { clock.now })
+    buffer.append("a")
+    clock.advance(5)
+    buffer.append("b")
+    clock.advance(1)
+    buffer.append("c", to: .error)
+    let joined = buffer.segments
+    try expect(joined.count == 2, "without splitAfter, a silence never splits a stream")
+    try expect(joined[0].start == Date(timeIntervalSince1970: 1_000), "start is the first write")
+    try expect(joined[0].end == Date(timeIntervalSince1970: 1_005), "end moves with each joined write")
+    try expect(joined[1].start == joined[1].end, "a single write starts and ends together")
+
+    let split = TextBuffer(splitAfter: 2, now: { clock.now })
+    split.append("x")
+    clock.advance(2)
+    split.append("y")
+    clock.advance(3)
+    split.append("z")
+    try expect(split.segments.map(\.text) == ["xy", "z"], "a write after more than splitAfter starts a segment")
+    try expect(split.text() == "xyz", "splitting keeps the text whole")
+
+    let trimmed = TextBuffer(limit: 2, now: { clock.now })
+    let start = clock.now
+    trimmed.append("abc")
+    try expect(trimmed.segments.first?.start == start, "a trimmed segment keeps its start")
 }
