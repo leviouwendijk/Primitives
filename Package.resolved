@@ -1,0 +1,15 @@
+{
+  "originHash" : "751fadc11ffbcb154a2fcdbdb889f7261497c20fb67966baa5d30cbd73c81b0c",
+  "pins" : [
+    {
+      "identity" : "atomos",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/leviouwendijk/Atomos.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "0dbb0c492669c725aed5f91b965440c7cd4256e3"
+      }
+    }
+  ],
+  "version" : 3
+}

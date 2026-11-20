@@ -16,7 +16,7 @@ public final class TextBuffer: @unchecked Sendable {
     public struct Segment: Sendable, Hashable {
         public let stream: TextStream
         public internal(set) var text: String
-        /// When the segment's first write arrived.
+        /// When the segment's first write arrived (the buffer's clock).
         public let start: Date
         /// When its last write arrived.
         public internal(set) var end: Date
@@ -40,7 +40,8 @@ public final class TextBuffer: @unchecked Sendable {
     /// adjacent write to one stream.
     public let splitAfter: TimeInterval?
 
-    private let now: @Sendable () -> Date
+    /// What dates the segments: the system's wall clock unless injected.
+    public let clock: WallClock
     private let lock = NSLock()
     private var storage: [Segment] = []
     private var count = 0
@@ -49,13 +50,13 @@ public final class TextBuffer: @unchecked Sendable {
     public init(
         limit: Int? = nil,
         splitAfter: TimeInterval? = nil,
-        now: @escaping @Sendable () -> Date = Date.init
+        clock: WallClock = .system
     ) {
         precondition(limit.map { $0 > 0 } ?? true, "A TextBuffer limit must be positive.")
         precondition(splitAfter.map { $0 >= 0 } ?? true, "A TextBuffer splitAfter must not be negative.")
         self.limit = limit
         self.splitAfter = splitAfter
-        self.now = now
+        self.clock = clock
     }
 
     public var sink: TextSink {
@@ -70,7 +71,7 @@ public final class TextBuffer: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         // Read under the lock, so segment times follow the order of the writes.
-        let time = now()
+        let time = Date(clock.now)
         if let last = storage.indices.last,
            storage[last].stream == stream,
            splitAfter.map({ time.timeIntervalSince(storage[last].end) <= $0 }) ?? true {

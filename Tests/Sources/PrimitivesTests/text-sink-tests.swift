@@ -46,24 +46,35 @@ func run_text_sink_tests() throws {
     try expect(concurrent.isEmpty && concurrent.dropped == 0, "clear empties the buffer")
 
     try run_text_buffer_time_tests()
+    try run_wall_clock_date_tests()
 }
 
-/// A clock the test moves by hand.
-private final class ManualClock: @unchecked Sendable {
-    var now = Date(timeIntervalSince1970: 1_000)
+private func run_wall_clock_date_tests() throws {
+    let date = Date(timeIntervalSince1970: 1_700_000_000.25)
+    try expect(Date(WallClock.Instant(date)) == date, "a Date survives the round trip through an instant")
+    try expect(WallClock.Instant(date).nanosecondsSinceUnixEpoch == 1_700_000_000_250_000_000, "instant from a Date")
+}
 
-    func advance(_ seconds: TimeInterval) {
-        now = now.addingTimeInterval(seconds)
+/// Time the test moves by hand, read through a `WallClock`.
+private final class ManualTime: @unchecked Sendable {
+    var now = WallClock.Instant(secondsSinceUnixEpoch: 1_000)
+
+    var clock: WallClock {
+        WallClock { self.now }
+    }
+
+    func advance(_ seconds: Double) {
+        now = now + MonotonicClock.Duration(seconds: seconds)
     }
 }
 
 private func run_text_buffer_time_tests() throws {
-    let clock = ManualClock()
-    let buffer = TextBuffer(now: { clock.now })
+    let time = ManualTime()
+    let buffer = TextBuffer(clock: time.clock)
     buffer.append("a")
-    clock.advance(5)
+    time.advance(5)
     buffer.append("b")
-    clock.advance(1)
+    time.advance(1)
     buffer.append("c", to: .error)
     let joined = buffer.segments
     try expect(joined.count == 2, "without splitAfter, a silence never splits a stream")
@@ -71,17 +82,17 @@ private func run_text_buffer_time_tests() throws {
     try expect(joined[0].end == Date(timeIntervalSince1970: 1_005), "end moves with each joined write")
     try expect(joined[1].start == joined[1].end, "a single write starts and ends together")
 
-    let split = TextBuffer(splitAfter: 2, now: { clock.now })
+    let split = TextBuffer(splitAfter: 2, clock: time.clock)
     split.append("x")
-    clock.advance(2)
+    time.advance(2)
     split.append("y")
-    clock.advance(3)
+    time.advance(3)
     split.append("z")
     try expect(split.segments.map(\.text) == ["xy", "z"], "a write after more than splitAfter starts a segment")
     try expect(split.text() == "xyz", "splitting keeps the text whole")
 
-    let trimmed = TextBuffer(limit: 2, now: { clock.now })
-    let start = clock.now
+    let trimmed = TextBuffer(limit: 2, clock: time.clock)
+    let start = Date(time.now)
     trimmed.append("abc")
     try expect(trimmed.segments.first?.start == start, "a trimmed segment keeps its start")
 }

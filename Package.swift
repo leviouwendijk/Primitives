@@ -15,10 +15,20 @@ let package = Package(
         ),
     ],
     dependencies: [
+        .package(
+            url: "https://github.com/leviouwendijk/Atomos.git",
+            branch: "master"
+        ),
     ],
     targets: [
         .target(
-            name: "Primitives"
+            name: "Primitives",
+            dependencies: [
+                .product(
+                    name: "Atomos",
+                    package: "Atomos"
+                ),
+            ]
         ),
     ]
 )
