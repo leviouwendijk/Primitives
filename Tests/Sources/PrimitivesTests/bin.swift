@@ -81,6 +81,10 @@ enum PrimitivesTestSuite {
             try run_reference_set_tests()
         }
 
+        Test("text-sink", tags: ["text"]) {
+            try run_text_sink_tests()
+        }
+
         Test("graph-layout", tags: ["graph", "layout"]) {
             try run_graph_layout_tests()
         }
